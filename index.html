@@ -3,69 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tactics Universal Force Builder</title>
+    <title>Tactics Force Builder - 5PFH</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --accent: #03dac6; --delete: #cf6679; --border: #333; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-        .container { max-width: 900px; margin: auto; background: var(--card); padding: 30px; border-radius: 12px; border: 1px solid var(--border); }
-        .unit-card { background: #252525; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--accent); position: relative; }
-        .grid-main { display: grid; grid-template-columns: 2fr 1fr 80px; gap: 10px; margin-bottom: 10px; }
-        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 10px; }
-        .stats-row input { text-align: center; background: #1a1a1a; border-color: #444; }
-        .stats-label { font-size: 0.7rem; text-transform: uppercase; color: #888; text-align: center; }
-        input, textarea { background: #2d2d2d; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 4px; }
-        textarea { width: 100%; height: 80px; box-sizing: border-box; resize: vertical; }
-        .controls { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; border-top: 1px solid var(--border); padding-top: 20px; }
-        button { padding: 12px 20px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; transition: 0.2s; }
-        .btn-add { background: var(--accent); color: #000; }
-        .btn-cards { background: #bb86fc; color: #000; }
-        .btn-del { background: var(--delete); color: white; }
-        .summary { margin-top: 20px; font-size: 1.8rem; font-weight: bold; color: var(--accent); }
-        label { display: block; margin-bottom: 5px; font-size: 0.8rem; color: #aaa; }
+        :root { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --accent: #2dd4bf; --delete: #fb7185; --border: #334155; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
+        .container { max-width: 900px; margin: 40px auto; background: var(--card); padding: 30px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        .unit-card { background: #0f172a; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border); position: relative; }
+        .grid-main { display: grid; grid-template-columns: 2fr 1fr 100px; gap: 15px; margin-bottom: 15px; }
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
+        .stats-box { background: #1e293b; padding: 5px; border-radius: 4px; border: 1px solid var(--border); }
+        .stats-label { font-size: 0.65rem; font-weight: bold; color: var(--accent); text-align: center; margin-bottom: 2px; }
+        input, textarea { background: #1e293b; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 4px; width: 100%; box-sizing: border-box; }
+        input:focus, textarea:focus { border-color: var(--accent); outline: none; }
+        .controls { display: flex; gap: 12px; margin-top: 30px; flex-wrap: wrap; }
+        button { padding: 12px 24px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; transition: 0.2s; }
+        .btn-add { background: var(--accent); color: #0f172a; }
+        .btn-cards { background: #818cf8; color: white; }
+        .btn-del { background: var(--delete); color: white; padding: 6px 12px; font-size: 0.8rem; margin-top: 10px; }
+        .summary { font-size: 1.5rem; margin-top: 20px; text-align: right; color: var(--accent); }
+        label { font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px; display: block; }
     </style>
 </head>
 <body>
 
+    <div style="width: 100%; height: 150px; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://wallpaperaccess.com/full/1162354.jpg'); background-size: cover; background-position: center; border-bottom: 3px solid var(--accent); display: flex; align-items: center; justify-content: center;">
+    <h1 style="color: white; font-family: 'Courier New', monospace; text-shadow: 2px 2px #000; letter-spacing: 5px;">TACTICS TERMINAL</h1>
+    </div>
+
 <div class="container">
     <header>
-        <h1>Tactics Force Builder</h1>
-        <input type="text" id="force-name" placeholder="Army Name (e.g. Blood Ravens)" style="width:100%; font-size: 1.5rem; margin-bottom: 20px;" oninput="saveData()">
+        <h1 style="margin-top:0">Tactics Force Builder</h1>
+        <p style="color:#94a3b8">Unofficial Army Architect for Five Parsecs From Home: Tactics</p>
+        <input type="text" id="force-name" placeholder="Force Name (e.g. Blood Ravens Strike Force)" oninput="saveData()">
     </header>
     
-    <div id="unit-list"></div>
+    <div id="unit-list" style="margin-top:30px"></div>
 
     <button class="btn-add" onclick="addUnit()">+ Add Unit</button>
     
     <div class="controls">
         <button class="btn-cards" onclick="exportCards()">Export Index Cards (PDF)</button>
-        <button onclick="exportPDF()" style="background:#eee;">Export Army List</button>
-        <button onclick="clearAll()" style="background:#444; color:white;">Reset All</button>
+        <button onclick="exportPDF()" style="background:#e2e8f0; color:#0f172a">Export Army List</button>
+        <button onclick="clearAll()" style="background:transparent; color:#fb7185; border: 1px solid #fb7185;">Reset All</button>
     </div>
 
-    <div class="summary">Total Points: <span id="total-pts">0</span></div>
+    <div class="summary">Total: <span id="total-pts">0</span> pts</div>
 </div>
 
 <script>
-    function addUnit(data = {name: '', type: '', pts: 0, desc: '', spd: 4, cbt: 0, tou: 4, arm: '6+'}) {
+    function addUnit(data = {name: '', type: '', pts: 0, desc: '', spd: '4"', cbt: '0', tou: '4', arm: '6+'}) {
         const list = document.getElementById('unit-list');
         const div = document.createElement('div');
         div.className = 'unit-card';
         div.innerHTML = `
             <div class="grid-main">
-                <div><label>Unit Name</label><input type="text" class="u-name" value="${data.name}" style="width:100%" oninput="saveData()"></div>
-                <div><label>Type</label><input type="text" class="u-type" value="${data.type}" style="width:100%" placeholder="Core" oninput="saveData()"></div>
-                <div><label>Points</label><input type="number" class="u-pts" value="${data.pts}" style="width:100%" oninput="saveData()"></div>
+                <div><label>Unit Name</label><input type="text" class="u-name" value="${data.name}" oninput="saveData()"></div>
+                <div><label>Type</label><input type="text" class="u-type" value="${data.type}" placeholder="e.g. Specialist" oninput="saveData()"></div>
+                <div><label>Points</label><input type="number" class="u-pts" value="${data.pts}" oninput="saveData()"></div>
             </div>
             <div class="stats-row">
-                <div><div class="stats-label">SPD</div><input type="text" class="u-spd" value="${data.spd}" oninput="saveData()"></div>
-                <div><div class="stats-label">CBT</div><input type="text" class="u-cbt" value="${data.cbt}" oninput="saveData()"></div>
-                <div><div class="stats-label">TOU</div><input type="text" class="u-tou" value="${data.tou}" oninput="saveData()"></div>
-                <div><div class="stats-label">ARM</div><input type="text" class="u-arm" value="${data.arm}" oninput="saveData()"></div>
+                <div class="stats-box"><div class="stats-label">SPD</div><input type="text" class="u-spd" value="${data.spd}" oninput="saveData()"></div>
+                <div class="stats-box"><div class="stats-label">CBT</div><input type="text" class="u-cbt" value="${data.cbt}" oninput="saveData()"></div>
+                <div class="stats-box"><div class="stats-label">TOU</div><input type="text" class="u-tou" value="${data.tou}" oninput="saveData()"></div>
+                <div class="stats-box"><div class="stats-label">ARM</div><input type="text" class="u-arm" value="${data.arm}" oninput="saveData()"></div>
             </div>
-            <label>Notes & Equipment</label>
+            <label>Notes / Equipment</label>
             <textarea class="u-desc" oninput="saveData()">${data.desc}</textarea>
-            <button class="btn-del" onclick="this.parentElement.remove(); saveData();" style="margin-top:10px; font-size:0.7rem">Delete Unit</button>
+            <button class="btn-del" onclick="this.parentElement.remove(); saveData();">Remove Unit</button>
         `;
         list.appendChild(div);
         updateTotal();
@@ -92,14 +97,14 @@
                 arm: card.querySelector('.u-arm').value
             });
         });
-        localStorage.setItem('tactics_army_v2', JSON.stringify({
+        localStorage.setItem('5p_tactics_builder_v3', JSON.stringify({
             name: document.getElementById('force-name').value,
             units: units
         }));
     }
 
     function loadData() {
-        const saved = JSON.parse(localStorage.getItem('tactics_army_v2'));
+        const saved = JSON.parse(localStorage.getItem('5p_tactics_builder_v3'));
         if (saved) {
             document.getElementById('force-name').value = saved.name;
             saved.units.forEach(u => addUnit(u));
@@ -113,57 +118,40 @@
         const cardW = 90, cardH = 65;
 
         document.querySelectorAll('.unit-card').forEach((card, i) => {
-            // Draw Card Box
-            doc.setDrawColor(0);
-            doc.setLineWidth(0.5);
-            doc.rect(x, y, cardW, cardH);
+            doc.setDrawColor(40).setLineWidth(0.4).rect(x, y, cardW, cardH);
+            doc.setFillColor(240, 240, 240).rect(x, y, cardW, 10, 'F');
+            doc.setFontSize(10).setFont(undefined, 'bold').setTextColor(0).text(card.querySelector('.u-name').value.toUpperCase() || 'UNIT', x+3, y+7);
             
-            // Header Area
-            doc.setFillColor(230, 230, 230);
-            doc.rect(x, y, cardW, 12, 'F');
-            doc.setFontSize(11).setFont(undefined, 'bold');
-            doc.text(card.querySelector('.u-name').value.toUpperCase(), x+3, y+8);
-            
-            // Stats Grid
-            doc.setFontSize(8).setFont(undefined, 'bold');
-            doc.text(`SPD: ${card.querySelector('.u-spd').value}`, x+3, y+18);
-            doc.text(`CBT: ${card.querySelector('.u-cbt').value}`, x+25, y+18);
-            doc.text(`TOU: ${card.querySelector('.u-tou').value}`, x+47, y+18);
-            doc.text(`ARM: ${card.querySelector('.u-arm').value}`, x+70, y+18);
-            doc.line(x, y+21, x+cardW, y+21);
+            doc.setFontSize(8).setTextColor(80).text(`SPD: ${card.querySelector('.u-spd').value} | CBT: ${card.querySelector('.u-cbt').value} | TOU: ${card.querySelector('.u-tou').value} | ARM: ${card.querySelector('.u-arm').value}`, x+3, y+16);
+            doc.line(x, y+19, x+cardW, y+19);
 
-            // Description
-            doc.setFont(undefined, 'normal');
-            doc.setFontSize(8);
+            doc.setFont(undefined, 'normal').setFontSize(8).setTextColor(0);
             const desc = doc.splitTextToSize(card.querySelector('.u-desc').value, cardW - 6);
-            doc.text(desc, x+3, y+26);
+            doc.text(desc, x+3, y+24);
 
-            // Point tag
-            doc.setFontSize(7);
-            doc.text(`${card.querySelector('.u-pts').value} pts`, x+cardW-12, y+cardH-3);
+            doc.setFontSize(7).text(`${card.querySelector('.u-pts').value} PTS`, x+cardW-12, y+cardH-3);
 
-            // Move to next slot
             x += cardW + 5;
             if (x > 150) { x = 10; y += cardH + 5; }
             if (y > 240) { doc.addPage(); x = 10; y = 10; }
         });
-        doc.save("Tactics_Index_Cards.pdf");
+        doc.save("Tactics_Unit_Cards.pdf");
     }
 
-    function exportPDF() { /* Samma som innan fast med de nya fälten */ 
+    function exportPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         doc.setFontSize(22).text(document.getElementById('force-name').value || "Force List", 10, 20);
         let y = 35;
         document.querySelectorAll('.unit-card').forEach(card => {
             doc.setFontSize(12).setFont(undefined, 'bold').text(`${card.querySelector('.u-name').value} (${card.querySelector('.u-pts').value} pts)`, 10, y);
-            doc.setFontSize(9).setFont(undefined, 'normal').text(`SPD: ${card.querySelector('.u-spd').value} | CBT: ${card.querySelector('.u-cbt').value} | TOU: ${card.querySelector('.u-tou').value} | ARM: ${card.querySelector('.u-arm').value}`, 10, y+5);
-            y += 15;
+            doc.setFontSize(9).setFont(undefined, 'normal').text(`Stats: SPD ${card.querySelector('.u-spd').value} / CBT ${card.querySelector('.u-cbt').value} / TOU ${card.querySelector('.u-tou').value} / ARM ${card.querySelector('.u-arm').value}`, 10, y+5);
+            y += 18;
         });
         doc.save("Army_List.pdf");
     }
 
-    function clearAll() { if(confirm("Delete everything?")) { localStorage.clear(); location.reload(); } }
+    function clearAll() { if(confirm("Erase all units?")) { localStorage.clear(); location.reload(); } }
     window.onload = loadData;
 </script>
 </body>
