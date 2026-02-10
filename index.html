@@ -3,28 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tactics Force Builder - Pro</title>
+    <title>Tactics Force Builder - Elite</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root { --bg: #0d1117; --card: #161b22; --text: #c9d1d9; --accent: #58a6ff; --delete: #f85149; --border: #30363d; --success: #238636; }
+        :root { --bg: #0d1117; --card: #161b22; --text: #c9d1d9; --accent: #58a6ff; --delete: #f85149; --border: #30363d; --success: #238636; --leader: #f2e05d; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-        .container { max-width: 950px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 8px; border: 1px solid var(--border); }
-        .unit-card { background: #0d1117; padding: 20px; border-radius: 6px; margin-bottom: 25px; border-left: 5px solid var(--accent); }
+        .container { max-width: 1000px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 8px; border: 1px solid var(--border); }
+        .unit-card { background: #0d1117; padding: 20px; border-radius: 6px; margin-bottom: 25px; border-left: 5px solid var(--accent); position: relative; }
         .grid-main { display: grid; grid-template-columns: 2fr 1.5fr 120px; gap: 15px; margin-bottom: 15px; }
         .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
         .stats-box { background: #161b22; padding: 5px; border-radius: 4px; border: 1px solid var(--border); text-align: center; }
         .stats-label { font-size: 0.65rem; color: var(--accent); font-weight: bold; }
         select, input, textarea { background: #0d1117; border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 4px; width: 100%; box-sizing: border-box; }
-        .upgrade-selector, .weapon-selector { display: flex; gap: 10px; background: #21262d; padding: 10px; border-radius: 4px; margin-top: 10px; }
-        .active-upgrades { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
-        .upgrade-tag { background: #30363d; padding: 4px 10px; border-radius: 15px; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; border: 1px solid #444; }
+        .section-label { font-size: 0.75rem; font-weight: bold; margin: 10px 0 5px; color: #8b949e; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
+        .leader-area { background: rgba(242, 224, 93, 0.05); border: 1px solid #4d451a; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .upgrade-tag { background: #30363d; padding: 4px 10px; border-radius: 15px; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; border: 1px solid #444; margin: 2px; }
         .tag-del { color: var(--delete); cursor: pointer; font-weight: bold; }
-        .controls { display: flex; gap: 15px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px; }
-        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; }
-        .btn-add { background: var(--accent); color: #fff; }
-        .btn-cards { background: #8b5cf6; color: #fff; font-size: 1.1rem; }
-        .summary { font-size: 2.2rem; color: var(--accent); text-align: right; margin-top: 20px; font-weight: bold; }
-        .disclaimer { font-size: 0.75rem; color: #8b949e; text-align: center; margin-top: 50px; border-top: 1px solid #333; padding-top: 20px; }
+        .flex-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .summary { font-size: 2.5rem; color: var(--accent); text-align: right; margin-top: 20px; font-weight: bold; }
+        button { padding: 10px 15px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; transition: 0.2s; }
+        .btn-add-item { background: #30363d; color: white; font-size: 0.8rem; }
+        .btn-add-item:hover { background: #444; }
     </style>
 </head>
 <body>
@@ -34,47 +33,40 @@
 </div>
 
 <div class="container">
-    <input type="text" id="force-name" placeholder="Army Name (e.g. Blood Ravens Strike Force)" style="font-size: 1.5rem; margin-bottom: 20px;" oninput="saveData()">
+    <input type="text" id="force-name" placeholder="Force Name..." style="font-size: 1.5rem; margin-bottom: 20px;" oninput="saveData()">
     <div id="unit-list"></div>
-    <button class="btn-add" onclick="addUnit()">+ Add Unit/Vehicle</button>
-    <div class="controls">
-        <button class="btn-cards" onclick="exportCards()">Export Index Cards (PDF)</button>
-        <button onclick="clearAll()" style="background:transparent; color:var(--delete); border: 1px solid var(--delete);">Reset All</button>
+    <button style="background:var(--accent); color:white;" onclick="addUnit()">+ ADD UNIT / VEHICLE</button>
+    <div style="margin-top:30px; border-top:1px solid var(--border); padding-top:20px; display:flex; gap:15px;">
+        <button style="background:var(--success); color:white;" onclick="exportCards()">EXPORT UNIT CARDS (PDF)</button>
+        <button style="background:#444; color:white;" onclick="clearAll()">RESET BUILDER</button>
     </div>
     <div class="summary">Total: <span id="total-pts">0</span> pts</div>
 </div>
 
-<div class="disclaimer">
-    <p><strong>UNOFFICIAL FAN TOOL.</strong> Created for the community as a tribute to <em>Five Parsecs From Home: Tactics</em>. <br> Rules & IP © Modiphius Entertainment & Nordic Weasel Games. Built with love and coffee.</p>
-</div>
-
 <script>
-    const BASE_COSTS = { "Core Infantry": 20, "Specialist": 30, "Elite": 40, "Support": 35, "Leader": 25, "Vehicle": 50 };
-    
-    const WEAPONS = [
-        { name: "Military Rifle", rng: '18"', sho: '2', dmg: '1' },
-        { name: "Assault Carbine", rng: '12"', sho: '3', dmg: '1' },
-        { name: "Heavy Bolter/MG", rng: '24"', sho: '3', dmg: '2' },
-        { name: "Plasma Rifle", rng: '18"', sho: '2', dmg: '2' },
-        { name: "Anti-Tank Missile", rng: '36"', sho: '1', dmg: '3' },
-        { name: "Assault Cannon", rng: '18"', sho: '5', dmg: '1' },
-        { name: "Flame Thrower", rng: '8"', sho: 'Template', dmg: '1' }
-    ];
+    const UNIT_TEMPLATES = {
+        "Core Infantry": { pts: 20, spd: '4"', cbt: '4', tou: '4', arm: '6+' },
+        "Specialist": { pts: 30, spd: '4"', cbt: '4', tou: '4', arm: '5+' },
+        "Elite": { pts: 40, spd: '5"', cbt: '3', tou: '4', arm: '4+' },
+        "Support": { pts: 35, spd: '3"', cbt: '4', tou: '5', arm: '4+' },
+        "Leader": { pts: 25, spd: '4"', cbt: '3', tou: '4', arm: '5+' },
+        "Vehicle": { pts: 50, spd: '8"', cbt: '4', tou: '6', arm: '3+' }
+    };
 
     const UPGRADES = [
-        { name: "[INF] Specialist Weapon", cost: 5 },
-        { name: "[INF] Heavy Weapon", cost: 10 },
-        { name: "[INF] Jump Packs", cost: 8 },
-        { name: "[INF] Medical Kit", cost: 4 },
-        { name: "[INF] Enhanced Armor", cost: 6 },
-        { name: "[VEH] Extra Armor", cost: 10 },
-        { name: "[VEH] Targeting Computer", cost: 12 },
-        { name: "[ALL] Veteran Status", cost: 10 }
+        { name: "Specialist Weapon", cost: 5 }, { name: "Heavy Weapon", cost: 10 },
+        { name: "Jump Packs", cost: 8 }, { name: "Medical Kit", cost: 5 },
+        { name: "Enhanced Armor", cost: 6 }, { name: "Targeting Computer (VEH)", cost: 12 }
+    ];
+
+    const LEADER_GEAR = [
+        { name: "Power Weapon", cost: 5 }, { name: "Plasma Pistol", cost: 4 },
+        { name: "Command Radio", cost: 5 }, { name: "Bionic Eye", cost: 3 }
     ];
 
     function addUnit(data = null) {
         const id = Date.now() + Math.random();
-        const unit = data || { id, name: '', type: 'Core Infantry', spd: '4"', cbt: '4', tou: '4', arm: '6+', weaponIdx: 0, upgrades: [], desc: '' };
+        const unit = data || { id, name: '', type: 'Core Infantry', ...UNIT_TEMPLATES["Core Infantry"], upgrades: [], leaderGear: [], desc: '' };
         renderUnit(unit);
         saveData();
     }
@@ -85,15 +77,15 @@
         div.className = 'unit-card';
         div.dataset.id = unit.id;
 
-        let typeOpts = Object.keys(BASE_COSTS).map(t => `<option value="${t}" ${unit.type === t ? 'selected' : ''}>${t}</option>`).join('');
+        let typeOpts = Object.keys(UNIT_TEMPLATES).map(t => `<option value="${t}" ${unit.type === t ? 'selected' : ''}>${t}</option>`).join('');
         let upgOpts = UPGRADES.map((u, i) => `<option value="${i}">${u.name} (+${u.cost})</option>`).join('');
-        let wpnOpts = WEAPONS.map((w, i) => `<option value="${i}" ${unit.weaponIdx == i ? 'selected' : ''}>${w.name}</option>`).join('');
+        let leadOpts = LEADER_GEAR.map((u, i) => `<option value="${i}">${u.name} (+${u.cost})</option>`).join('');
 
         div.innerHTML = `
             <div class="grid-main">
-                <div><label style="font-size:0.7rem">Unit Name</label><input type="text" class="u-name" value="${unit.name}" oninput="saveData()"></div>
-                <div><label style="font-size:0.7rem">Type</label><select class="u-type" onchange="saveData()">${typeOpts}</select></div>
-                <div><label style="font-size:0.7rem">Unit Pts</label><input type="text" class="u-pts-display" readonly style="color:var(--accent); font-weight:bold; font-size:1.1rem"></div>
+                <div><label>Name</label><input type="text" class="u-name" value="${unit.name}" oninput="saveData()"></div>
+                <div><label>Type</label><select class="u-type" onchange="applyTemplate(this)">${typeOpts}</select></div>
+                <div><label>Unit Total</label><input type="text" class="u-pts-display" readonly style="color:var(--accent); font-weight:bold; font-size:1.2rem"></div>
             </div>
             <div class="stats-row">
                 <div class="stats-box"><div class="stats-label">SPD</div><input type="text" class="u-spd" value="${unit.spd}" oninput="saveData()"></div>
@@ -101,46 +93,64 @@
                 <div class="stats-box"><div class="stats-label">TOU</div><input type="text" class="u-tou" value="${unit.tou}" oninput="saveData()"></div>
                 <div class="stats-box"><div class="stats-label">ARM</div><input type="text" class="u-arm" value="${unit.arm}" oninput="saveData()"></div>
             </div>
-            <div class="weapon-selector">
-                <label style="font-size:0.7rem; width:100px">Main Weapon</label>
-                <select class="u-wpn" onchange="saveData()">${wpnOpts}</select>
+            
+            <div class="section-label">Unit Upgrades</div>
+            <div class="flex-row">
+                <select class="upg-drop">${upgOpts}</select>
+                <button class="btn-add-item" onclick="addItem(this, 'upgrades', UPGRADES, '.u-tags')">ADD</button>
             </div>
-            <div class="upgrade-selector">
-                <select class="upg-dropdown">${upgOpts}</select>
-                <button onclick="addUpgrade(this)" style="background:var(--success); color:white;">+ Add Upgrade</button>
+            <div class="u-tags" style="display:flex; flex-wrap:wrap;"></div>
+
+            <div class="leader-area">
+                <div class="section-label" style="color:var(--leader)">⭐ Leader Gear</div>
+                <div class="flex-row">
+                    <select class="lead-drop">${leadOpts}</select>
+                    <button class="btn-add-item" onclick="addItem(this, 'leaderGear', LEADER_GEAR, '.l-tags')">ADD</button>
+                </div>
+                <div class="l-tags" style="display:flex; flex-wrap:wrap;"></div>
             </div>
-            <div class="active-upgrades"></div>
-            <textarea class="u-desc" placeholder="Notes (Traits, Melee weapons, Damage Track...)" oninput="saveData()">${unit.desc}</textarea>
-            <button onclick="this.parentElement.remove(); saveData();" style="background:none; color:var(--delete); font-size:0.7rem; cursor:pointer; margin-top:10px">[ Remove Unit ]</button>
+
+            <textarea class="u-desc" placeholder="Squad Notes..." oninput="saveData()">${unit.desc}</textarea>
+            <button onclick="this.parentElement.remove(); saveData();" style="color:var(--delete); background:none; font-size:0.7rem;">[ REMOVE UNIT ]</button>
         `;
         list.appendChild(div);
-        if(unit.upgrades) unit.upgrades.forEach(upg => renderUpgradeTag(div.querySelector('.active-upgrades'), upg));
+        if(unit.upgrades) unit.upgrades.forEach(u => renderTag(div.querySelector('.u-tags'), u));
+        if(unit.leaderGear) unit.leaderGear.forEach(u => renderTag(div.querySelector('.l-tags'), u));
         updateTotal();
     }
 
-    function addUpgrade(btn) {
-        const card = btn.closest('.unit-card');
-        const upg = UPGRADES[card.querySelector('.upg-dropdown').value];
-        renderUpgradeTag(card.querySelector('.active-upgrades'), upg);
+    function applyTemplate(select) {
+        const card = select.closest('.unit-card');
+        const tpl = UNIT_TEMPLATES[select.value];
+        card.querySelector('.u-spd').value = tpl.spd;
+        card.querySelector('.u-cbt').value = tpl.cbt;
+        card.querySelector('.u-tou').value = tpl.tou;
+        card.querySelector('.u-arm').value = tpl.arm;
         saveData();
     }
 
-    function renderUpgradeTag(container, upg) {
+    function addItem(btn, key, source, tagClass) {
+        const card = btn.closest('.unit-card');
+        const idx = card.querySelector(key === 'upgrades' ? '.upg-drop' : '.lead-drop').value;
+        renderTag(card.querySelector(tagClass), source[idx]);
+        saveData();
+    }
+
+    function renderTag(container, item) {
         const span = document.createElement('span');
         span.className = 'upgrade-tag';
-        span.dataset.name = upg.name;
-        span.dataset.cost = upg.cost;
-        span.innerHTML = `${upg.name} (+${upg.cost}) <span class="tag-del" onclick="this.parentElement.remove(); saveData();">×</span>`;
+        span.dataset.name = item.name; span.dataset.cost = item.cost;
+        span.innerHTML = `${item.name} (+${item.cost}) <span class="tag-del" onclick="this.parentElement.remove(); saveData();">×</span>`;
         container.appendChild(span);
     }
 
     function updateTotal() {
         let grandTotal = 0;
         document.querySelectorAll('.unit-card').forEach(card => {
-            const base = BASE_COSTS[card.querySelector('.u-type').value];
-            let upgs = 0;
-            card.querySelectorAll('.upgrade-tag').forEach(tag => upgs += parseInt(tag.dataset.cost));
-            const total = base + upgs;
+            const base = UNIT_TEMPLATES[card.querySelector('.u-type').value].pts;
+            let extras = 0;
+            card.querySelectorAll('.upgrade-tag').forEach(t => extras += parseInt(t.dataset.cost));
+            const total = base + extras;
             card.querySelector('.u-pts-display').value = total;
             grandTotal += total;
         });
@@ -151,71 +161,44 @@
         updateTotal();
         const units = [];
         document.querySelectorAll('.unit-card').forEach(card => {
-            const upgs = [];
-            card.querySelectorAll('.upgrade-tag').forEach(tag => upgs.push({name: tag.dataset.name, cost: tag.dataset.cost}));
+            const getTags = (selector) => Array.from(card.querySelectorAll(selector)).map(t => ({name: t.dataset.name, cost: t.dataset.cost}));
             units.push({
                 id: card.dataset.id, name: card.querySelector('.u-name').value, type: card.querySelector('.u-type').value,
                 spd: card.querySelector('.u-spd').value, cbt: card.querySelector('.u-cbt').value, tou: card.querySelector('.u-tou').value, arm: card.querySelector('.u-arm').value,
-                weaponIdx: card.querySelector('.u-wpn').value, upgrades: upgs, desc: card.querySelector('.u-desc').value
+                upgrades: getTags('.u-tags .upgrade-tag'), leaderGear: getTags('.l-tags .upgrade-tag'), desc: card.querySelector('.u-desc').value
             });
         });
-        localStorage.setItem('tactics_ultra_v1', JSON.stringify({ name: document.getElementById('force-name').value, units }));
-    }
-
-    function loadData() {
-        const saved = JSON.parse(localStorage.getItem('tactics_ultra_v1'));
-        if (saved) {
-            document.getElementById('force-name').value = saved.name;
-            saved.units.forEach(u => renderUnit(u));
-        } else { addUnit(); }
+        localStorage.setItem('tactics_leader_v1', JSON.stringify({ name: document.getElementById('force-name').value, units }));
     }
 
     function exportCards() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         let x = 10, y = 10;
-        const cardW = 90, cardH = 80; // Taller cards for better spacing
-
         document.querySelectorAll('.unit-card').forEach(card => {
-            doc.setDrawColor(0).setLineWidth(0.5).rect(x, y, cardW, cardH);
-            doc.setFillColor(30, 40, 50).rect(x, y, cardW, 12, 'F');
-            doc.setTextColor(255).setFontSize(12).setFont(undefined, 'bold').text(card.querySelector('.u-name').value.toUpperCase() || 'UNIT', x+3, y+8);
+            doc.setDrawColor(0).rect(x, y, 90, 75);
+            doc.setFillColor(30).rect(x, y, 90, 10, 'F');
+            doc.setTextColor(255).setFontSize(12).text(card.querySelector('.u-name').value.toUpperCase() || 'UNIT', x+3, y+7);
             
-            // Stats Grid
-            doc.setTextColor(0).setFontSize(9);
-            const vals = [card.querySelector('.u-spd').value, card.querySelector('.u-cbt').value, card.querySelector('.u-tou').value, card.querySelector('.u-arm').value];
-            const labels = ['SPD','CBT','TOU','ARM'];
-            for(let i=0; i<4; i++) {
-                doc.setDrawColor(200).rect(x+(i*22.5), y+12, 22.5, 12);
-                doc.setFontSize(6).text(labels[i], x+(i*22.5)+2, y+16);
-                doc.setFontSize(10).text(vals[i], x+(i*22.5)+8, y+22);
-            }
+            doc.setTextColor(0).setFontSize(9).setFont(undefined, 'bold');
+            doc.text(`SPD ${card.querySelector('.u-spd').value} | CBT ${card.querySelector('.u-cbt').value} | TOU ${card.querySelector('.u-tou').value} | ARM ${card.querySelector('.u-arm').value}`, x+3, y+16);
+            
+            doc.setFontSize(7).setFont(undefined, 'normal');
+            let upgs = "UPGRADES: " + Array.from(card.querySelectorAll('.u-tags .upgrade-tag')).map(t => t.dataset.name).join(', ');
+            let lead = "LEADER: " + Array.from(card.querySelectorAll('.l-tags .upgrade-tag')).map(t => t.dataset.name).join(', ');
+            doc.text(doc.splitTextToSize(upgs, 84), x+3, y+22);
+            doc.text(doc.splitTextToSize(lead, 84), x+3, y+32);
+            doc.text(doc.splitTextToSize(card.querySelector('.u-desc').value, 84), x+3, y+45);
+            
+            doc.setFontSize(10).setFont(undefined, 'bold').text(`${card.querySelector('.u-pts-display').value} PTS`, x+72, y+71);
 
-            // Weapon Stats
-            const wpn = WEAPONS[card.querySelector('.u-wpn').value];
-            doc.setFillColor(245, 245, 245).rect(x, y+24, cardW, 8, 'F');
-            doc.setFontSize(8).setFont(undefined, 'bold').text(`${wpn.name}: Rng ${wpn.rng} | Sho ${wpn.sho} | Dmg ${wpn.dmg}`, x+3, y+30);
-
-            // Upgrades
-            doc.setFont(undefined, 'normal').setFontSize(7);
-            let upgs = Array.from(card.querySelectorAll('.upgrade-tag')).map(t => t.dataset.name).join(', ');
-            const splitUpg = doc.splitTextToSize("UPGRADES: " + upgs, cardW - 6);
-            doc.text(splitUpg, x+3, y+37);
-
-            // Notes
-            const desc = doc.splitTextToSize(card.querySelector('.u-desc').value, cardW - 6);
-            doc.text(desc, x+3, y+48);
-
-            // Points - Larger and Clearer
-            doc.setFontSize(9).setFont(undefined, 'bold').text(`${card.querySelector('.u-pts-display').value} PTS`, x+cardW-15, y+cardH-4);
-
-            x += 95; if(x > 150) { x = 10; y += cardH + 5; }
-            if(y > 200) { doc.addPage(); x = 10; y = 10; }
+            x += 95; if(x > 150) { x = 10; y += 80; }
+            if(y > 220) { doc.addPage(); x = 10; y = 10; }
         });
-        doc.save("Tactics_Index_Cards.pdf");
+        doc.save("Tactics_Cards.pdf");
     }
 
-    function clearAll() { if(confirm("Erase all?")) { localStorage.clear(); location.reload(); } }
+    function clearAll() { if(confirm("Clear all?")) { localStorage.clear(); location.reload(); } }
     window.onload = loadData;
 </script>
 </body>
