@@ -3,121 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tactics Force Builder</title>
+    <title>Tactics Force Builder - Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root { --bg: #0d1117; --card: #161b22; --text: #c9d1d9; --accent: #58a6ff; --delete: #f85149; --border: #30363d; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        
-        .header-area { text-align: center; padding: 20px 0; border-bottom: 1px solid var(--border); margin-bottom: 30px; }
-        .header-area h1 { margin: 0; letter-spacing: 2px; color: #fff; }
-
-        .container { max-width: 900px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 8px; border: 1px solid var(--border); }
-        .unit-card { background: #0d1117; padding: 20px; border-radius: 6px; margin-bottom: 20px; border: 1px solid var(--border); border-left: 5px solid var(--accent); }
-        
-        .grid-main { display: grid; grid-template-columns: 2fr 1.5fr 100px; gap: 15px; margin-bottom: 15px; }
+        :root { --bg: #0d1117; --card: #161b22; --text: #c9d1d9; --accent: #58a6ff; --delete: #f85149; --border: #30363d; --success: #238636; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+        .container { max-width: 950px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 8px; border: 1px solid var(--border); }
+        .unit-card { background: #0d1117; padding: 20px; border-radius: 6px; margin-bottom: 25px; border-left: 5px solid var(--accent); }
+        .grid-main { display: grid; grid-template-columns: 2fr 1.5fr 120px; gap: 15px; margin-bottom: 15px; }
         .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
         .stats-box { background: #161b22; padding: 5px; border-radius: 4px; border: 1px solid var(--border); text-align: center; }
         .stats-label { font-size: 0.65rem; color: var(--accent); font-weight: bold; }
-        
         select, input, textarea { background: #0d1117; border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 4px; width: 100%; box-sizing: border-box; }
+        .upgrade-selector, .weapon-selector { display: flex; gap: 10px; background: #21262d; padding: 10px; border-radius: 4px; margin-top: 10px; }
+        .active-upgrades { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+        .upgrade-tag { background: #30363d; padding: 4px 10px; border-radius: 15px; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; border: 1px solid #444; }
+        .tag-del { color: var(--delete); cursor: pointer; font-weight: bold; }
         .controls { display: flex; gap: 15px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px; }
-        button { padding: 12px 25px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; }
+        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; }
         .btn-add { background: var(--accent); color: #fff; }
-        .btn-cards { background: #8b5cf6; color: #fff; }
-        .summary { font-size: 2rem; color: var(--accent); text-align: right; margin-top: 20px; }
-        .disclaimer { font-size: 0.7rem; color: #8b949e; text-align: center; margin-top: 50px; line-height: 1.4; }
-        
-        .eq-list { background: #161b22; padding: 10px; border-radius: 4px; margin-top: 10px; border: 1px dashed #444; }
+        .btn-cards { background: #8b5cf6; color: #fff; font-size: 1.1rem; }
+        .summary { font-size: 2.2rem; color: var(--accent); text-align: right; margin-top: 20px; font-weight: bold; }
+        .disclaimer { font-size: 0.75rem; color: #8b949e; text-align: center; margin-top: 50px; border-top: 1px solid #333; padding-top: 20px; }
     </style>
 </head>
 <body>
 
-<div class="header-area">
-    <h1>TACTICS FORCE BUILDER</h1>
+<div style="text-align:center; padding-bottom:20px;">
+    <h1 style="letter-spacing:3px; color:#fff; margin:0;">TACTICS FORCE BUILDER</h1>
 </div>
 
 <div class="container">
-    <input type="text" id="force-name" placeholder="Force Name (e.g. Blood Ravens)" style="font-size: 1.5rem; margin-bottom: 20px;" oninput="saveData()">
-    
+    <input type="text" id="force-name" placeholder="Army Name (e.g. Blood Ravens Strike Force)" style="font-size: 1.5rem; margin-bottom: 20px;" oninput="saveData()">
     <div id="unit-list"></div>
-
-    <button class="btn-add" onclick="addUnit()">+ Add Unit / Vehicle</button>
-    
+    <button class="btn-add" onclick="addUnit()">+ Add Unit/Vehicle</button>
     <div class="controls">
         <button class="btn-cards" onclick="exportCards()">Export Index Cards (PDF)</button>
-        <button onclick="exportPDF()" style="background:#30363d; color:white;">Save Army List</button>
-        <button onclick="clearAll()" style="background:transparent; color:var(--delete); border: 1px solid var(--delete);">Reset</button>
+        <button onclick="clearAll()" style="background:transparent; color:var(--delete); border: 1px solid var(--delete);">Reset All</button>
     </div>
-
-    <div class="summary">Force Total: <span id="total-pts">0</span> Points</div>
+    <div class="summary">Total: <span id="total-pts">0</span> pts</div>
 </div>
 
 <div class="disclaimer">
-    <p><strong>UNOFFICIAL FAN TOOL.</strong> Five Parsecs From Home: Tactics is © Modiphius Entertainment & Nordic Weasel Games. <br> Built for the community with love.</p>
+    <p><strong>UNOFFICIAL FAN TOOL.</strong> Created for the community as a tribute to <em>Five Parsecs From Home: Tactics</em>. <br> Rules & IP © Modiphius Entertainment & Nordic Weasel Games. Built with love and coffee.</p>
 </div>
 
 <script>
-    // Data based on PDF building rules
-    const BASE_COSTS = { "Core Infantry": 20, "Specialist": 30, "Elite": 40, "Support": 35, "Leader": 25, "Vehicle": 50, "Custom": 0 };
-    const EQUIPMENT_OPTIONS = [
-        { name: "No Upgrade", cost: 0 },
-        { name: "Specialist Weapon (+5)", cost: 5 },
-        { name: "Heavy Weapon (+10)", cost: 10 },
-        { name: "Enhanced Armor (+5)", cost: 5 },
-        { name: "Jump Packs/Infiltration (+8)", cost: 8 },
-        { name: "Tactical Comms (+3)", cost: 3 },
-        { name: "Medical Kit (+4)", cost: 4 },
-        { name: "Vehicle Upgrade: Shield (+15)", cost: 15 },
-        { name: "Vehicle Upgrade: Extra Ammo (+5)", cost: 5 }
+    const BASE_COSTS = { "Core Infantry": 20, "Specialist": 30, "Elite": 40, "Support": 35, "Leader": 25, "Vehicle": 50 };
+    
+    const WEAPONS = [
+        { name: "Military Rifle", rng: '18"', sho: '2', dmg: '1' },
+        { name: "Assault Carbine", rng: '12"', sho: '3', dmg: '1' },
+        { name: "Heavy Bolter/MG", rng: '24"', sho: '3', dmg: '2' },
+        { name: "Plasma Rifle", rng: '18"', sho: '2', dmg: '2' },
+        { name: "Anti-Tank Missile", rng: '36"', sho: '1', dmg: '3' },
+        { name: "Assault Cannon", rng: '18"', sho: '5', dmg: '1' },
+        { name: "Flame Thrower", rng: '8"', sho: 'Template', dmg: '1' }
     ];
 
-    function addUnit(data = {name: '', type: 'Core Infantry', basePts: 20, eqPts: 0, desc: '', spd: '4"', cbt: '4', tou: '4', arm: '6+'}) {
+    const UPGRADES = [
+        { name: "[INF] Specialist Weapon", cost: 5 },
+        { name: "[INF] Heavy Weapon", cost: 10 },
+        { name: "[INF] Jump Packs", cost: 8 },
+        { name: "[INF] Medical Kit", cost: 4 },
+        { name: "[INF] Enhanced Armor", cost: 6 },
+        { name: "[VEH] Extra Armor", cost: 10 },
+        { name: "[VEH] Targeting Computer", cost: 12 },
+        { name: "[ALL] Veteran Status", cost: 10 }
+    ];
+
+    function addUnit(data = null) {
+        const id = Date.now() + Math.random();
+        const unit = data || { id, name: '', type: 'Core Infantry', spd: '4"', cbt: '4', tou: '4', arm: '6+', weaponIdx: 0, upgrades: [], desc: '' };
+        renderUnit(unit);
+        saveData();
+    }
+
+    function renderUnit(unit) {
         const list = document.getElementById('unit-list');
         const div = document.createElement('div');
         div.className = 'unit-card';
-        
-        let typeOpts = Object.keys(BASE_COSTS).map(t => `<option value="${t}" ${data.type === t ? 'selected' : ''}>${t}</option>`).join('');
-        let eqOpts = EQUIPMENT_OPTIONS.map(e => `<option value="${e.cost}">${e.name}</option>`).join('');
+        div.dataset.id = unit.id;
+
+        let typeOpts = Object.keys(BASE_COSTS).map(t => `<option value="${t}" ${unit.type === t ? 'selected' : ''}>${t}</option>`).join('');
+        let upgOpts = UPGRADES.map((u, i) => `<option value="${i}">${u.name} (+${u.cost})</option>`).join('');
+        let wpnOpts = WEAPONS.map((w, i) => `<option value="${i}" ${unit.weaponIdx == i ? 'selected' : ''}>${w.name}</option>`).join('');
 
         div.innerHTML = `
             <div class="grid-main">
-                <div><label style="font-size:0.7rem">Name</label><input type="text" class="u-name" value="${data.name}" oninput="saveData()"></div>
-                <div><label style="font-size:0.7rem">Type</label><select class="u-type" onchange="updateUnitBase(this)">${typeOpts}</select></div>
-                <div><label style="font-size:0.7rem">Total Unit Pts</label><input type="number" class="u-pts" value="${parseInt(data.basePts) + parseInt(data.eqPts)}" readonly style="color:var(--accent); font-weight:bold;"></div>
+                <div><label style="font-size:0.7rem">Unit Name</label><input type="text" class="u-name" value="${unit.name}" oninput="saveData()"></div>
+                <div><label style="font-size:0.7rem">Type</label><select class="u-type" onchange="saveData()">${typeOpts}</select></div>
+                <div><label style="font-size:0.7rem">Unit Pts</label><input type="text" class="u-pts-display" readonly style="color:var(--accent); font-weight:bold; font-size:1.1rem"></div>
             </div>
             <div class="stats-row">
-                <div class="stats-box"><div class="stats-label">SPD</div><input type="text" class="u-spd" value="${data.spd}" oninput="saveData()"></div>
-                <div class="stats-box"><div class="stats-label">CBT</div><input type="text" class="u-cbt" value="${data.cbt}" oninput="saveData()"></div>
-                <div class="stats-box"><div class="stats-label">TOU</div><input type="text" class="u-tou" value="${data.tou}" oninput="saveData()"></div>
-                <div class="stats-box"><div class="stats-label">ARM</div><input type="text" class="u-arm" value="${data.arm}" oninput="saveData()"></div>
+                <div class="stats-box"><div class="stats-label">SPD</div><input type="text" class="u-spd" value="${unit.spd}" oninput="saveData()"></div>
+                <div class="stats-box"><div class="stats-label">CBT</div><input type="text" class="u-cbt" value="${unit.cbt}" oninput="saveData()"></div>
+                <div class="stats-box"><div class="stats-label">TOU</div><input type="text" class="u-tou" value="${unit.tou}" oninput="saveData()"></div>
+                <div class="stats-box"><div class="stats-label">ARM</div><input type="text" class="u-arm" value="${unit.arm}" oninput="saveData()"></div>
             </div>
-            <div class="eq-list">
-                <label style="font-size:0.7rem">Add Equipment / Upgrades</label>
-                <select class="u-eq-select" onchange="saveData()">${eqOpts}</select>
+            <div class="weapon-selector">
+                <label style="font-size:0.7rem; width:100px">Main Weapon</label>
+                <select class="u-wpn" onchange="saveData()">${wpnOpts}</select>
             </div>
-            <textarea class="u-desc" placeholder="Traits, weapons, or status..." style="margin-top:10px">${data.desc}</textarea>
-            <input type="hidden" class="u-base-val" value="${data.basePts}">
+            <div class="upgrade-selector">
+                <select class="upg-dropdown">${upgOpts}</select>
+                <button onclick="addUpgrade(this)" style="background:var(--success); color:white;">+ Add Upgrade</button>
+            </div>
+            <div class="active-upgrades"></div>
+            <textarea class="u-desc" placeholder="Notes (Traits, Melee weapons, Damage Track...)" oninput="saveData()">${unit.desc}</textarea>
             <button onclick="this.parentElement.remove(); saveData();" style="background:none; color:var(--delete); font-size:0.7rem; cursor:pointer; margin-top:10px">[ Remove Unit ]</button>
         `;
         list.appendChild(div);
+        if(unit.upgrades) unit.upgrades.forEach(upg => renderUpgradeTag(div.querySelector('.active-upgrades'), upg));
         updateTotal();
     }
 
-    function updateUnitBase(selectEl) {
-        const card = selectEl.closest('.unit-card');
-        card.querySelector('.u-base-val').value = BASE_COSTS[selectEl.value];
+    function addUpgrade(btn) {
+        const card = btn.closest('.unit-card');
+        const upg = UPGRADES[card.querySelector('.upg-dropdown').value];
+        renderUpgradeTag(card.querySelector('.active-upgrades'), upg);
         saveData();
+    }
+
+    function renderUpgradeTag(container, upg) {
+        const span = document.createElement('span');
+        span.className = 'upgrade-tag';
+        span.dataset.name = upg.name;
+        span.dataset.cost = upg.cost;
+        span.innerHTML = `${upg.name} (+${upg.cost}) <span class="tag-del" onclick="this.parentElement.remove(); saveData();">×</span>`;
+        container.appendChild(span);
     }
 
     function updateTotal() {
         let grandTotal = 0;
         document.querySelectorAll('.unit-card').forEach(card => {
-            const base = parseInt(card.querySelector('.u-base-val').value) || 0;
-            const eq = parseInt(card.querySelector('.u-eq-select').value) || 0;
-            const unitTotal = base + eq;
-            card.querySelector('.u-pts').value = unitTotal;
-            grandTotal += unitTotal;
+            const base = BASE_COSTS[card.querySelector('.u-type').value];
+            let upgs = 0;
+            card.querySelectorAll('.upgrade-tag').forEach(tag => upgs += parseInt(tag.dataset.cost));
+            const total = base + upgs;
+            card.querySelector('.u-pts-display').value = total;
+            grandTotal += total;
         });
         document.getElementById('total-pts').innerText = grandTotal;
     }
@@ -126,29 +151,22 @@
         updateTotal();
         const units = [];
         document.querySelectorAll('.unit-card').forEach(card => {
+            const upgs = [];
+            card.querySelectorAll('.upgrade-tag').forEach(tag => upgs.push({name: tag.dataset.name, cost: tag.dataset.cost}));
             units.push({
-                name: card.querySelector('.u-name').value,
-                type: card.querySelector('.u-type').value,
-                basePts: card.querySelector('.u-base-val').value,
-                eqPts: card.querySelector('.u-eq-select').value,
-                desc: card.querySelector('.u-desc').value,
-                spd: card.querySelector('.u-spd').value,
-                cbt: card.querySelector('.u-cbt').value,
-                tou: card.querySelector('.u-tou').value,
-                arm: card.querySelector('.u-arm').value
+                id: card.dataset.id, name: card.querySelector('.u-name').value, type: card.querySelector('.u-type').value,
+                spd: card.querySelector('.u-spd').value, cbt: card.querySelector('.u-cbt').value, tou: card.querySelector('.u-tou').value, arm: card.querySelector('.u-arm').value,
+                weaponIdx: card.querySelector('.u-wpn').value, upgrades: upgs, desc: card.querySelector('.u-desc').value
             });
         });
-        localStorage.setItem('tactics_auto_pts_v1', JSON.stringify({
-            name: document.getElementById('force-name').value,
-            units: units
-        }));
+        localStorage.setItem('tactics_ultra_v1', JSON.stringify({ name: document.getElementById('force-name').value, units }));
     }
 
     function loadData() {
-        const saved = JSON.parse(localStorage.getItem('tactics_auto_pts_v1'));
+        const saved = JSON.parse(localStorage.getItem('tactics_ultra_v1'));
         if (saved) {
             document.getElementById('force-name').value = saved.name;
-            saved.units.forEach(u => addUnit(u));
+            saved.units.forEach(u => renderUnit(u));
         } else { addUnit(); }
     }
 
@@ -156,45 +174,45 @@
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         let x = 10, y = 10;
-        const cardW = 90, cardH = 65;
+        const cardW = 90, cardH = 80; // Taller cards for better spacing
 
-        document.querySelectorAll('.unit-card').forEach((card) => {
+        document.querySelectorAll('.unit-card').forEach(card => {
             doc.setDrawColor(0).setLineWidth(0.5).rect(x, y, cardW, cardH);
-            doc.setFillColor(40, 44, 52).rect(x, y, cardW, 10, 'F');
-            doc.setFontSize(10).setFont(undefined, 'bold').setTextColor(255).text(card.querySelector('.u-name').value.toUpperCase() || 'UNIT', x+3, y+7);
+            doc.setFillColor(30, 40, 50).rect(x, y, cardW, 12, 'F');
+            doc.setTextColor(255).setFontSize(12).setFont(undefined, 'bold').text(card.querySelector('.u-name').value.toUpperCase() || 'UNIT', x+3, y+8);
             
-            // Draw stat boxes (PDF style)
-            doc.setTextColor(0).setFontSize(8);
-            const stats = ['SPD','CBT','TOU','ARM'];
+            // Stats Grid
+            doc.setTextColor(0).setFontSize(9);
             const vals = [card.querySelector('.u-spd').value, card.querySelector('.u-cbt').value, card.querySelector('.u-tou').value, card.querySelector('.u-arm').value];
-            for(let s=0; s<4; s++) {
-                doc.setDrawColor(180).rect(x+(s*22.5), y+10, 22.5, 12);
-                doc.setFontSize(5).text(stats[s], x+(s*22.5)+2, y+14);
-                doc.setFontSize(9).text(vals[s], x+(s*22.5)+8, y+20);
+            const labels = ['SPD','CBT','TOU','ARM'];
+            for(let i=0; i<4; i++) {
+                doc.setDrawColor(200).rect(x+(i*22.5), y+12, 22.5, 12);
+                doc.setFontSize(6).text(labels[i], x+(i*22.5)+2, y+16);
+                doc.setFontSize(10).text(vals[i], x+(i*22.5)+8, y+22);
             }
 
-            const desc = doc.splitTextToSize(card.querySelector('.u-desc').value, cardW - 6);
-            doc.text(desc, x+3, y+27);
-            doc.setFontSize(6).text(`${card.querySelector('.u-pts').value} PTS`, x+cardW-2, y+cardH-2, {align:'right'});
+            // Weapon Stats
+            const wpn = WEAPONS[card.querySelector('.u-wpn').value];
+            doc.setFillColor(245, 245, 245).rect(x, y+24, cardW, 8, 'F');
+            doc.setFontSize(8).setFont(undefined, 'bold').text(`${wpn.name}: Rng ${wpn.rng} | Sho ${wpn.sho} | Dmg ${wpn.dmg}`, x+3, y+30);
 
-            x += cardW + 5;
-            if (x > 150) { x = 10; y += cardH + 5; }
-            if (y > 240) { doc.addPage(); x = 10; y = 10; }
+            // Upgrades
+            doc.setFont(undefined, 'normal').setFontSize(7);
+            let upgs = Array.from(card.querySelectorAll('.upgrade-tag')).map(t => t.dataset.name).join(', ');
+            const splitUpg = doc.splitTextToSize("UPGRADES: " + upgs, cardW - 6);
+            doc.text(splitUpg, x+3, y+37);
+
+            // Notes
+            const desc = doc.splitTextToSize(card.querySelector('.u-desc').value, cardW - 6);
+            doc.text(desc, x+3, y+48);
+
+            // Points - Larger and Clearer
+            doc.setFontSize(9).setFont(undefined, 'bold').text(`${card.querySelector('.u-pts-display').value} PTS`, x+cardW-15, y+cardH-4);
+
+            x += 95; if(x > 150) { x = 10; y += cardH + 5; }
+            if(y > 200) { doc.addPage(); x = 10; y = 10; }
         });
         doc.save("Tactics_Index_Cards.pdf");
-    }
-
-    function exportPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.setFontSize(22).text(document.getElementById('force-name').value || "Army List", 10, 20);
-        let y = 35;
-        document.querySelectorAll('.unit-card').forEach(card => {
-            doc.setFontSize(12).setFont(undefined, 'bold').text(`${card.querySelector('.u-name').value} - ${card.querySelector('.u-pts').value} pts`, 10, y);
-            doc.setFontSize(9).setFont(undefined, 'normal').text(`${card.querySelector('.u-type').value} | SPD ${card.querySelector('.u-spd').value} CBT ${card.querySelector('.u-cbt').value} TOU ${card.querySelector('.u-tou').value} ARM ${card.querySelector('.u-arm').value}`, 10, y+5);
-            y += 18;
-        });
-        doc.save("Force_List.pdf");
     }
 
     function clearAll() { if(confirm("Erase all?")) { localStorage.clear(); location.reload(); } }
