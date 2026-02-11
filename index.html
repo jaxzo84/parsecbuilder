@@ -3,179 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tactics Terminal - Advanced Builder</title>
+    <title>Tactics Terminal - Master Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root { --bg: #0d1117; --card: #161b22; --text: #c9d1d9; --accent: #ffb86c; --border: #30363d; --ok: #50fa7b; --err: #ff5555; --char: #bd93f9; --veh: #8be9fd; --input-bg: #0d1117; }
+        :root { 
+            --bg: #0d1117; --card: #161b22; --text: #c9d1d9; 
+            --accent: #ffb86c; --border: #30363d; --ok: #50fa7b; 
+            --err: #ff5555; --char: #bd93f9; --veh: #8be9fd; 
+            --input-bg: #0d1117; 
+        }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 10px; margin: 0; }
         .container { max-width: 1100px; margin: 0 auto; background: var(--card); padding: 20px; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
-        /* Layout & Typography */
+        /* Headers & List Name */
+        .header-section { text-align: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
         h2 { margin: 0; color: #fff; letter-spacing: 4px; text-transform: uppercase; }
-        small { display: block; margin-top: 5px; color: var(--accent); opacity: 0.8; }
-        .section-header { font-size: 0.75rem; text-transform: uppercase; color: #8b949e; border-bottom: 1px solid var(--border); margin-bottom: 8px; padding-bottom: 4px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .list-name-input { 
+            margin-top: 15px; font-size: 1.5rem; text-align: center; 
+            background: transparent; border: none; border-bottom: 2px solid var(--accent); 
+            color: var(--ok); width: 60%; font-weight: bold; 
+        }
+        .list-name-input:focus { outline: none; border-color: #fff; }
 
         /* Unit Cards */
         .unit-card { background: #21262d; padding: 15px; border-radius: 6px; margin-bottom: 20px; border-left: 5px solid var(--accent); position: relative; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
+        .role-Vehicle { border-left-color: var(--veh); }
         .role-Character { border-left-color: var(--char); }
-        .role-Support { border-left-color: var(--veh); }
 
-        /* Inputs & Grids */
+        /* Grid Layouts */
         .top-row { display: grid; grid-template-columns: 2fr 1fr 1.5fr auto; gap: 10px; margin-bottom: 15px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .stats-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px; margin-bottom: 15px; border: 1px solid var(--border); }
         .stat-box { text-align: center; }
         .stat-label { font-size: 0.65rem; color: var(--accent); font-weight: bold; display: block; margin-bottom: 2px; }
         .stat-input { width: 100%; text-align: center; background: transparent; border: none; color: white; font-weight: bold; font-size: 1.1rem; }
 
-        /* Config Areas */
+        /* Config & Options */
         .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .config-panel { background: rgba(255,255,255,0.02); padding: 10px; border-radius: 4px; border: 1px solid var(--border); }
-        
-        /* Form Elements */
+        .section-header { font-size: 0.75rem; text-transform: uppercase; color: #8b949e; border-bottom: 1px solid var(--border); margin-bottom: 8px; font-weight: bold; display: flex; justify-content: space-between; }
+
+        /* Inputs */
         select, input[type="text"], textarea { background: var(--input-bg); border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 4px; width: 100%; font-size: 0.9rem; box-sizing: border-box; }
-        select:focus, input:focus { border-color: var(--accent); outline: none; }
         
-        /* Checkboxes & Lists */
+        /* Lists */
         .opt-list { max-height: 150px; overflow-y: auto; }
         .opt-item { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px; padding: 4px; background: rgba(0,0,0,0.2); border-radius: 3px; cursor: pointer; }
-        .opt-item:hover { background: rgba(255,255,255,0.05); }
-        .opt-item input { margin-right: 8px; }
         .cost-badge { background: #30363d; padding: 1px 6px; border-radius: 3px; font-size: 0.75rem; color: var(--accent); }
 
-        /* Buttons & Footer */
+        /* Buttons */
         .btn-row { display: flex; gap: 10px; margin-top: 25px; }
-        .btn { padding: 12px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.9rem; text-transform: uppercase; transition: filter 0.2s; }
+        .btn { padding: 12px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; flex: 1; transition: 0.2s; }
         .btn:hover { filter: brightness(1.2); }
-        .btn-add { background: var(--accent); color: #161b22; flex: 1; }
-        .btn-pdf { background: var(--ok); color: #161b22; flex: 1; }
-        .btn-del { position: absolute; top: -10px; right: -10px; background: var(--err); color: white; border: none; width: 25px; height: 25px; border-radius: 50%; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.5); z-index: 10; }
+        .btn-add { background: var(--accent); color: #161b22; }
+        .btn-pdf { background: var(--veh); color: #161b22; }
+        .btn-txt { background: var(--ok); color: #161b22; }
+        .btn-del { position: absolute; top: -10px; right: -10px; background: var(--err); color: white; border: none; width: 25px; height: 25px; border-radius: 50%; cursor: pointer; z-index: 10; font-weight:bold; }
 
-        .total-banner { text-align: right; margin-top: 20px; font-size: 2.5rem; font-weight: bold; color: var(--accent); border-top: 2px solid var(--border); padding-top: 10px; }
-        .unit-pts-display { font-weight: bold; color: var(--ok); font-size: 1.1rem; text-align: center; display: flex; align-items: center; justify-content: center; background: rgba(80, 250, 123, 0.1); border-radius: 4px; border: 1px solid var(--ok); }
-
-        /* Helper for attachments */
-        .attachment-row { display: flex; gap: 5px; margin-bottom: 5px; }
-        .attachment-row select { flex: 1; }
-        .attachment-row .qty { width: 50px; text-align: center; }
+        .total-banner { text-align: right; margin-top: 20px; font-size: 2rem; font-weight: bold; color: var(--accent); border-top: 2px solid var(--border); padding-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div style="text-align:center; padding-bottom:20px;">
+    <div class="header-section">
         <h2>TACTICS TERMINAL</h2>
-        <small>ADVANCED ARMY BUILDER FOR FIVE PARSECS: TACTICS</small>
+        <small>ADVANCED ARMY BUILDER</small>
+        <input type="text" id="army-name" class="list-name-input" placeholder="ENTER FORCE NAME">
     </div>
 
     <div id="unit-list"></div>
     
     <div class="btn-row">
-        <button class="btn btn-add" onclick="createNewUnit()">+ Add Unit / Squad</button>
-        <button class="btn btn-pdf" onclick="generatePDF()">🖨️ Export PDF Cards</button>
+        <button class="btn btn-add" onclick="createNewUnit()">+ Add Unit</button>
+        <button class="btn btn-txt" onclick="exportToText()">💾 Save as Text</button>
+        <button class="btn btn-pdf" onclick="generatePDF()">🖨️ Export Data Cards</button>
     </div>
 
     <div class="total-banner">
-        <span style="font-size:1rem; vertical-align:middle; color:#8b949e;">TOTAL ARMY VALUE:</span>
-        <span id="army-total">0</span> PTS
+        <span style="font-size:1rem; color:#8b949e;">TOTAL POINTS:</span>
+        <span id="army-total">0</span>
     </div>
 </div>
 
 <script>
-    // --- 1. DATABAS (REPO) ---
-    // Baserat på PDF-regler.
+    // --- DATABASE ---
     
     const WEAPONS = {
-        "Military Rifle": { cost: 3, type: "Rifle" },
-        "Infantry Laser": { cost: 4, type: "Rifle" },
-        "Shotgun": { cost: 2, type: "Rifle" },
-        "Blaster": { cost: 3, type: "Rifle" },
-        "Needle Rifle": { cost: 5, type: "Rifle" },
-        "Handgun": { cost: 1, type: "Pistol" },
-        "Hand Flamer": { cost: 3, type: "Pistol" },
-        "Dueling Pistol": { cost: 3, type: "Pistol" },
-        "Power Claw": { cost: 2, type: "Melee" }
+        // Infantry
+        "Military Rifle": { cost: 3 }, "Infantry Laser": { cost: 4 }, "Shotgun": { cost: 2 },
+        "Blaster": { cost: 3 }, "Needle Rifle": { cost: 5 }, "Handgun": { cost: 1 },
+        "Power Claw": { cost: 2 }, "Sniper Rifle": { cost: 10 }, "Plasma Rifle": { cost: 8 },
+        "Light Machine Gun": { cost: 10 }, "Grenade Launcher": { cost: 10 },
+        // Vehicle / Heavy
+        "Heavy Machine Gun": { cost: 15 }, "20mm Autocannon": { cost: 20 }, 
+        "40mm Autocannon": { cost: 25 }, "Laser Cannon": { cost: 35 }, 
+        "Pulse Laser": { cost: 35 }, "Anti-tank Missile": { cost: 30 },
+        "75mm Cannon": { cost: 45 }, "100mm Cannon": { cost: 55 },
+        "Heavy Plasma": { cost: 20 }, "Fusion Cannon": { cost: 25 }
     };
 
     const ATTACHMENTS = {
-        "None": { cost: 0 },
-        "Medic": { cost: 10, note: "Ignore first casualty (5+)" },
-        "Comms Bot": { cost: 8, note: "+1 Reaction" },
-        "Servitor": { cost: 5, note: "Carry heavy gear" },
-        "Combat Droid": { cost: 12, note: "Extra Combat die" },
-        "Psychic (Minor)": { cost: 15, note: "Minor Psionics" },
-        "Officer (Lt)": { cost: 20, note: "Order range 12\"" }
+        "None": { cost: 0 }, "Medic": { cost: 10 }, "Comms Bot": { cost: 8 },
+        "Combat Droid": { cost: 12 }, "Psychic (Minor)": { cost: 15 }, 
+        "Officer (Lt)": { cost: 20 }
     };
 
     const UNIT_TYPES = {
+        // INFANTRY
         "Infantry Squad": {
-            basePoints: 15, // Adjusted base (without weapons) assuming ~5 bodies at 3pts each base stats
-            models: 5,
-            defaultWeapon: "Military Rifle",
-            role: "Troops",
-            stats: { spd: '4"', rea: '3', cbt: '4', tou: '4', sav: '5+', kp: '1' },
-            upgrades: {
-                "Grenades (+2)": 2,
-                "Fog Grenades (+5)": 5,
-                "Blade Upgrade (+1/model)": 5, // 1 per model
-                "Screen Generator (+10)": 10
-            },
-            heavyWeapons: ["Light Machine Gun (+10)", "Plasma Rifle (+8)", "Fury Rifle (+15)", "Grenade Launcher (+10)"]
+            type: "Infantry", models: 5, basePoints: 15, defaultWeapon: "Military Rifle",
+            stats: { spd: '4"', rea: '3', cbt: '4', tou: '4', sav: '5+', kp: '1', cap: '-' },
+            upgrades: { "Grenades (+2)": 2, "Screen Gen (+10)": 10 },
+            heavy: ["Light Machine Gun", "Plasma Rifle", "Grenade Launcher"]
         },
         "Storm Squad": {
-            basePoints: 20,
-            models: 5,
-            defaultWeapon: "Blaster",
-            role: "Troops",
-            stats: { spd: '4"', rea: '3', cbt: '3', tou: '5', sav: '4+', kp: '1' },
-            upgrades: {
-                "Jet Packs (+5)": 5,
-                "Heavy Armor (+10)": 10,
-                "Penetrator Grenades (+10)": 10
-            },
-            heavyWeapons: ["Fusion Rifle (+8)", "Flame Projector (+4)", "Heavy Laser (+12)"]
+            type: "Infantry", models: 5, basePoints: 20, defaultWeapon: "Blaster",
+            stats: { spd: '4"', rea: '3', cbt: '3', tou: '5', sav: '4+', kp: '1', cap: '-' },
+            upgrades: { "Jet Packs (+5)": 5, "Heavy Armor (+10)": 10 },
+            heavy: ["Fusion Rifle (+8)", "Heavy Laser (+12)"]
         },
-        "Specialist Team": {
-            basePoints: 18,
-            models: 3,
-            defaultWeapon: "Shotgun",
-            role: "Character", // Or Specialist
-            stats: { spd: '5"', rea: '2', cbt: '3', tou: '3', sav: '6+', kp: '1' },
-            upgrades: {
-                "Stealth Gear (+5)": 5,
-                "Demo Charges (+5)": 5
-            },
-            heavyWeapons: ["Sniper Rifle (+12)", "Flamer (+8)"]
+        "Character (Hero)": {
+            type: "Character", models: 1, basePoints: 20, defaultWeapon: "Handgun",
+            stats: { spd: '5"', rea: '2', cbt: '3', tou: '4', sav: '4+', kp: '3', cap: '-' },
+            upgrades: { "Hero Skill (+5)": 5, "Jump Belt (+5)": 5 },
+            heavy: []
         },
-        "Light Walker": {
-            basePoints: 60,
-            models: 1,
-            defaultWeapon: "None", // Vehicles often have fixed weapons or custom slots
-            role: "Support",
-            stats: { spd: '5"', rea: '3', cbt: '3', tou: '8', sav: '4+', kp: '4' },
-            upgrades: {
-                "Searchlight (+2)": 2,
-                "Reinforced Hull (+10)": 10,
-                "Smoke Launchers (+5)": 5
-            },
-            heavyWeapons: ["Heavy Plasma Swap (Free)", "Fusion Cannon Swap (+5)"]
+
+        // VEHICLES (Base stats typically Tracked/Standard)
+        "Nomad Bike": {
+            type: "Vehicle", models: 1, basePoints: 15, defaultWeapon: "None",
+            stats: { spd: '10"', rea: '2', cbt: '3', tou: '5', sav: '5+', kp: '3', cap: '-' },
+            options: ["Wheeled (Std)", "Grav (+5pts)"],
+            upgrades: { "Targeter (+5)": 5 },
+            heavy: ["Light Machine Gun"]
+        },
+        "Armored Car": {
+            type: "Vehicle", models: 1, basePoints: 50, defaultWeapon: "None",
+            stats: { spd: '8"', rea: '2', cbt: '3', tou: '7', sav: '-', kp: '5', cap: '-' },
+            options: ["Wheeled (+10pts)", "Tracked (Std)"], // Wheeled usually faster but limited
+            upgrades: { "Smoke Launchers (+5)": 5, "Searchlight (+2)": 2 },
+            heavy: ["20mm Autocannon", "Heavy Machine Gun"]
         },
         "APC": {
-            basePoints: 50,
-            models: 1,
-            defaultWeapon: "None",
-            role: "Support",
-            stats: { spd: '8"', rea: '2', cbt: '1', tou: '7', sav: '-', kp: '5' },
-            upgrades: {
-                "Guided Missiles (+15)": 15,
-                "Dozer Blade (+5)": 5
-            },
-            heavyWeapons: ["Heavy Bolter (+10)"]
+            type: "Vehicle", models: 1, basePoints: 50, defaultWeapon: "None",
+            stats: { spd: '8"', rea: '2', cbt: '3', tou: '7', sav: '-', kp: '5', cap: '10' },
+            options: ["Tracked (Std)", "Grav (+5pts)", "Wheeled (+0)"],
+            upgrades: { "Dozer Blade (+5)": 5 },
+            heavy: ["Heavy Machine Gun", "Auto-GL (+15)"]
+        },
+        "Light Walker": {
+            type: "Vehicle", models: 1, basePoints: 70, defaultWeapon: "None",
+            stats: { spd: '6"', rea: '3', cbt: '3', tou: '6', sav: '5+', kp: '4', cap: '-' },
+            options: ["Walker (Std)"],
+            upgrades: { "Reinforced Hull (+10)": 10 },
+            heavy: ["Heavy Plasma", "Autocannon"]
+        },
+        "Medium Tank": {
+            type: "Vehicle", models: 1, basePoints: 140, defaultWeapon: "None",
+            stats: { spd: '6"', rea: '2', cbt: '3', tou: '9', sav: '-', kp: '6', cap: '-' },
+            options: ["Tracked (Std)", "Grav (+10pts)"],
+            upgrades: { "Ablative Armor (+15)": 15 },
+            heavy: ["75mm Cannon", "Heavy Plasma", "Laser Cannon"]
         }
     };
 
-    // --- 2. LOGIK ---
+    // --- LOGIC ---
 
     function createNewUnit() {
         const id = 'unit-' + Date.now();
@@ -184,27 +178,24 @@
         card.className = 'unit-card';
         card.id = id;
         
-        // Initial HTML Structure
         card.innerHTML = `
             <button class="btn-del" onclick="removeUnit('${id}')">×</button>
-            
             <div class="top-row">
-                <input type="text" class="u-name" placeholder="Unit Designation (e.g. Alpha Squad)">
-                
+                <input type="text" class="u-name" placeholder="Unit Name (e.g. Iron Treads)">
                 <select class="u-type" onchange="loadUnitData('${id}')">
-                    <option value="" disabled selected>Select Hull/Type...</option>
+                    <option value="" disabled selected>Select Chassis/Type</option>
                     ${Object.keys(UNIT_TYPES).map(t => `<option value="${t}">${t}</option>`).join('')}
                 </select>
-                
                 <select class="u-role">
-                    <option>Troops</option><option>Support</option><option>Character</option>
+                    <option>Troops</option><option>Support</option><option>Vehicle</option><option>Character</option>
                 </select>
-
-                <div class="unit-pts-display"><span class="u-points">0</span></div>
+                <div style="font-weight:bold; color:var(--ok); text-align:center; padding-top:5px;">
+                    <span class="u-points">0</span> PTS
+                </div>
             </div>
 
             <div class="stats-grid">
-                ${['SPD','REA','CBT','TOU','SAV','KP'].map(s => `
+                ${['SPD','REA','CBT','TOU','SAV','KP','CAP'].map(s => `
                     <div class="stat-box">
                         <span class="stat-label">${s}</span>
                         <input type="text" class="stat-input u-${s.toLowerCase()}" value="-">
@@ -213,115 +204,119 @@
 
             <div class="config-grid">
                 <div class="config-panel">
-                    <div class="section-header">
-                        <span>Loadout</span>
-                        <small id="model-count-${id}">Models: 1</small>
-                    </div>
+                    <div class="section-header"><span>Configuration</span> <small id="model-count-${id}"></small></div>
                     
-                    <div style="margin-bottom:10px;">
-                        <label class="stat-label">Standard Weapon (Main Squad)</label>
+                    <div class="opt-row" style="margin-bottom:8px;">
+                         <label class="stat-label">Chassis/Mobility</label>
+                         <select class="u-mobility" onchange="calculatePoints('${id}')"><option value="Standard">Standard</option></select>
+                    </div>
+
+                    <div style="margin-bottom:8px;">
+                        <label class="stat-label">Main/Squad Weapon</label>
                         <select class="u-std-weapon" onchange="calculatePoints('${id}')"></select>
                     </div>
 
-                    <div style="margin-bottom:10px;">
-                        <label class="stat-label">Heavy Weapons / Specialist Gear</label>
+                    <div>
+                        <label class="stat-label">Secondary / Heavy Weapons</label>
                         <div class="opt-list u-heavy-list"></div>
                     </div>
                 </div>
 
                 <div class="config-panel">
-                    <div class="section-header">Upgrades & Attachments</div>
+                    <div class="section-header">Upgrades & Notes</div>
+                    <div class="opt-list u-upgrade-list" style="margin-bottom:10px; height:70px;"></div>
                     
-                    <div class="opt-list u-upgrade-list" style="margin-bottom:10px; height:80px;"></div>
-                    
-                    <label class="stat-label">Unit Attachment (Add Model)</label>
-                    <div class="attachment-row">
-                        <select class="u-attachment" onchange="calculatePoints('${id}')">
-                            ${Object.keys(ATTACHMENTS).map(a => `<option value="${a}">${a} (${ATTACHMENTS[a].cost}pts)</option>`).join('')}
-                        </select>
-                    </div>
-                    
-                    <textarea class="u-notes" placeholder="Notes, Traits or Veteran Skills..." style="height:40px; margin-top:5px;"></textarea>
+                    <label class="stat-label">Attachment (Infantry Only)</label>
+                    <select class="u-attachment" onchange="calculatePoints('${id}')">
+                        ${Object.keys(ATTACHMENTS).map(a => `<option value="${a}">${a} (${ATTACHMENTS[a].cost})</option>`).join('')}
+                    </select>
+
+                    <textarea class="u-notes" placeholder="Notes, special rules..." style="height:35px; margin-top:5px;"></textarea>
                 </div>
             </div>
         `;
-        
         container.appendChild(card);
     }
 
-    function removeUnit(id) {
-        document.getElementById(id).remove();
-        updateTotal();
-    }
+    function removeUnit(id) { document.getElementById(id).remove(); updateTotal(); }
 
     function loadUnitData(id) {
         const card = document.getElementById(id);
         const type = card.querySelector('.u-type').value;
         const data = UNIT_TYPES[type];
-
         if (!data) return;
 
-        // Set Role
-        card.querySelector('.u-role').value = data.role;
-        card.className = `unit-card role-${data.role}`; // Update color
-        
-        // Set Stats
-        Object.keys(data.stats).forEach(k => {
-            card.querySelector(`.u-${k}`).value = data.stats[k];
-        });
+        // Visuals
+        card.className = `unit-card role-${data.type === 'Vehicle' ? 'Vehicle' : data.type === 'Character' ? 'Character' : 'Troops'}`;
+        card.querySelector('.u-role').value = data.type === 'Vehicle' ? 'Vehicle' : (data.type === 'Character' ? 'Character' : 'Troops');
 
-        // Set Model Count Display
-        card.querySelector(`#model-count-${id}`).innerText = `Models: ${data.models}`;
+        // Stats
+        Object.keys(data.stats).forEach(k => card.querySelector(`.u-${k}`).value = data.stats[k]);
+        card.querySelector(`#model-count-${id}`).innerText = data.type === 'Vehicle' ? 'Single Model' : `${data.models} Models`;
 
-        // Populate Standard Weapon Dropdown
-        const weaponSel = card.querySelector('.u-std-weapon');
-        weaponSel.innerHTML = '';
-        
-        if (data.defaultWeapon !== "None") {
-            // Add Default First
-            const defWep = WEAPONS[data.defaultWeapon];
-            weaponSel.innerHTML += `<option value="${data.defaultWeapon}" data-cost="${defWep.cost}">${data.defaultWeapon} (Standard)</option>`;
-            
-            // Add Swaps (Compatible types only)
-            const defType = defWep.type;
-            Object.keys(WEAPONS).forEach(wName => {
-                if (wName !== data.defaultWeapon && WEAPONS[wName].type === defType) {
-                    const diff = WEAPONS[wName].cost - defWep.cost;
-                    const sign = diff >= 0 ? '+' : '';
-                    weaponSel.innerHTML += `<option value="${wName}" data-cost="${WEAPONS[wName].cost}">${wName} (${sign}${diff} pts)</option>`;
-                }
+        // Mobility Options (Vehicles)
+        const mobSel = card.querySelector('.u-mobility');
+        mobSel.innerHTML = '';
+        if (data.options) {
+            data.options.forEach(opt => {
+                let cost = 0;
+                let txt = opt;
+                if(opt.includes('+')) cost = parseInt(opt.split('+')[1]);
+                mobSel.innerHTML += `<option value="${cost}">${txt}</option>`;
             });
         } else {
-            weaponSel.innerHTML = `<option value="None" data-cost="0">Vehicle / No Standard Weapon</option>`;
+            mobSel.innerHTML = '<option value="0">Standard</option>';
         }
 
-        // Populate Upgrades
-        const upgList = card.querySelector('.u-upgrade-list');
-        upgList.innerHTML = '';
-        Object.entries(data.upgrades).forEach(([name, cost]) => {
-            upgList.innerHTML += `
+        // Weapons
+        const wepSel = card.querySelector('.u-std-weapon');
+        wepSel.innerHTML = '';
+        if (data.defaultWeapon !== "None") {
+            const defCost = WEAPONS[data.defaultWeapon].cost;
+            wepSel.innerHTML += `<option value="${data.defaultWeapon}" data-cost="${defCost}">${data.defaultWeapon} (Stock)</option>`;
+            // Add compatible swaps
+            Object.keys(WEAPONS).forEach(w => {
+                 if(w !== data.defaultWeapon && !w.includes('Cannon')) { // Simple filter
+                     const diff = WEAPONS[w].cost - defCost;
+                     wepSel.innerHTML += `<option value="${w}" data-cost="${WEAPONS[w].cost}">${w} (${diff>=0?'+':''}${diff})</option>`;
+                 }
+            });
+        } else {
+            wepSel.innerHTML = `<option value="None" data-cost="0">No Main Gun</option>`;
+        }
+
+        // Heavy/Secondary
+        const heavyList = card.querySelector('.u-heavy-list');
+        heavyList.innerHTML = '';
+        const heavySrc = data.heavy.length > 0 ? data.heavy : (data.type==='Vehicle' ? Object.keys(WEAPONS).filter(k=>WEAPONS[k].cost>10) : []);
+        
+        heavySrc.forEach(h => {
+            let name = h; 
+            let cost = 0;
+            // Check if string has cost built in "Name (+10)" or look up in DB
+            if (h.includes('(+')) {
+                name = h.split(' (+')[0];
+                cost = parseInt(h.split('(+')[1]);
+            } else if (WEAPONS[h]) {
+                cost = WEAPONS[h].cost;
+            }
+            heavyList.innerHTML += `
                 <label class="opt-item">
-                    <span><input type="checkbox" class="chk-upgrade" value="${cost}" onchange="calculatePoints('${id}')"> ${name.split(' (')[0]}</span>
+                    <span><input type="checkbox" class="chk-heavy" value="${cost}" onchange="calculatePoints('${id}')"> ${name}</span>
                     <span class="cost-badge">${cost} pts</span>
                 </label>`;
         });
 
-        // Populate Heavy Weapons
-        const heavyList = card.querySelector('.u-heavy-list');
-        heavyList.innerHTML = '';
-        if (data.heavyWeapons) {
-            data.heavyWeapons.forEach(hw => {
-                // Parse "Name (+Cost)"
-                const parts = hw.match(/(.+) \(([+-]?\d+|Free)\)/);
-                const name = parts ? parts[1] : hw;
-                const costStr = parts ? parts[2] : "0";
-                const cost = costStr === "Free" ? 0 : parseInt(costStr);
-                
-                heavyList.innerHTML += `
-                    <label class="opt-item">
-                        <span><input type="checkbox" class="chk-heavy" value="${cost}" onchange="calculatePoints('${id}')"> ${name}</span>
-                        <span class="cost-badge">${cost} pts</span>
-                    </label>`;
+        // Upgrades
+        const upgList = card.querySelector('.u-upgrade-list');
+        upgList.innerHTML = '';
+        if (data.upgrades) {
+            Object.entries(data.upgrades).forEach(([name, cost]) => {
+                upgList.innerHTML += `
+                <label class="opt-item">
+                    <span><input type="checkbox" class="chk-upg" value="${cost}" onchange="calculatePoints('${id}')"> ${name.split(' (+')[0]}</span>
+                    <span class="cost-badge">${cost} pts</span>
+                </label>`;
             });
         }
 
@@ -332,122 +327,169 @@
         const card = document.getElementById(id);
         const type = card.querySelector('.u-type').value;
         const data = UNIT_TYPES[type];
-        if (!data) return;
+        if(!data) return;
 
         let total = data.basePoints;
 
-        // 1. Standard Weapon Swap Logic
-        // In 5PFH, you pay for weapons per model usually. 
-        // If Base Points does NOT include weapons, we add full cost.
-        // If Base Points INCLUDES default weapon, we add difference.
-        // *Assumption*: Defined Base Points in this code excludes weapon cost to make math easier, 
-        // OR we treat difference. Let's do Difference Method assuming Base Points implies "Ready to play with Rifles".
-        
-        const selectedWeaponOpt = card.querySelector('.u-std-weapon').selectedOptions[0];
-        if (selectedWeaponOpt) {
-            const currentWeaponCost = parseInt(selectedWeaponOpt.dataset.cost);
-            const defaultWeaponCost = data.defaultWeapon !== "None" ? WEAPONS[data.defaultWeapon].cost : 0;
-            const diff = currentWeaponCost - defaultWeaponCost;
-            total += (diff * data.models);
+        // Mobility
+        total += parseInt(card.querySelector('.u-mobility').value || 0);
+
+        // Weapon Swap (Infantry pays per model, Vehicle pays flat)
+        const stdWepOpt = card.querySelector('.u-std-weapon').selectedOptions[0];
+        if (stdWepOpt && stdWepOpt.value !== "None") {
+            const current = parseInt(stdWepOpt.dataset.cost);
+            const base = WEAPONS[data.defaultWeapon] ? WEAPONS[data.defaultWeapon].cost : 0;
+            const diff = current - base;
+            total += (data.type === 'Vehicle' || data.type === 'Character') ? diff : (diff * data.models);
         }
 
-        // 2. Heavy Weapons (Usually replaces a rifle, so technically we should refund rifle? 
-        // Or is the cost listed as an "Upgrade cost"? usually lists are "Upgrade for +X". 
-        // We will assume the costs in lists are net upgrade costs).
-        card.querySelectorAll('.chk-heavy:checked').forEach(chk => {
-            total += parseInt(chk.value);
-        });
-
-        // 3. General Upgrades
-        card.querySelectorAll('.chk-upgrade:checked').forEach(chk => {
-            total += parseInt(chk.value);
-        });
-
-        // 4. Attachments
-        const attachVal = card.querySelector('.u-attachment').value;
-        if (ATTACHMENTS[attachVal]) {
-            total += ATTACHMENTS[attachVal].cost;
-        }
-
-        // Display
-        card.querySelector('.u-points').innerText = total + " PTS";
-        card.dataset.points = total;
+        // Heavy / Upgrades
+        card.querySelectorAll('.chk-heavy:checked, .chk-upg:checked').forEach(c => total += parseInt(c.value));
         
+        // Attachment
+        const att = card.querySelector('.u-attachment').value;
+        if(ATTACHMENTS[att]) total += ATTACHMENTS[att].cost;
+
+        card.querySelector('.u-points').innerText = total;
+        card.dataset.p = total;
         updateTotal();
     }
 
     function updateTotal() {
-        let sum = 0;
-        document.querySelectorAll('.unit-card').forEach(c => {
-            sum += parseInt(c.dataset.points || 0);
-        });
-        document.getElementById('army-total').innerText = sum;
+        let t = 0;
+        document.querySelectorAll('.unit-card').forEach(c => t += parseInt(c.dataset.p || 0));
+        document.getElementById('army-total').innerText = t;
     }
 
-    // --- 3. PDF EXPORT ---
+    // --- EXPORTS ---
+
+    function exportToText() {
+        const name = document.getElementById('army-name').value || "My Army";
+        let txt = `${name.toUpperCase()}\nTotal Points: ${document.getElementById('army-total').innerText}\n================================\n\n`;
+        
+        document.querySelectorAll('.unit-card').forEach(c => {
+            const uName = c.querySelector('.u-name').value || c.querySelector('.u-type').value;
+            const type = c.querySelector('.u-type').value;
+            const pts = c.querySelector('.u-points').innerText;
+            const stats = Array.from(c.querySelectorAll('.stat-input')).map(i=>i.value).join(' | ');
+            
+            // Gather wargear
+            const mainWep = c.querySelector('.u-std-weapon').value;
+            const gear = Array.from(c.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.parentElement.innerText).join(', ');
+            
+            txt += `[${pts} pts] ${uName} (${type})\n`;
+            txt += `Stats: ${stats} (SPD/REA/CBT/TOU/SAV/KP/CAP)\n`;
+            txt += `Gear: ${mainWep}${gear ? ', ' + gear : ''}\n`;
+            if (c.querySelector('.u-notes').value) txt += `Notes: ${c.querySelector('.u-notes').value}\n`;
+            txt += `--------------------------------\n`;
+        });
+
+        const blob = new Blob([txt], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${name.replace(/\s+/g, '_')}.txt`;
+        a.click();
+    }
+
     function generatePDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+        const armyName = document.getElementById('army-name').value || "Unknown Force";
         
-        let y = 20;
+        // Background
+        doc.setFillColor(20, 20, 20); doc.rect(0, 0, 210, 297, 'F');
+        doc.setTextColor(255, 255, 255); doc.setFontSize(22);
+        doc.text(armyName.toUpperCase(), 105, 20, null, null, 'center');
+        doc.setFontSize(12); doc.setTextColor(255, 184, 108);
+        doc.text(`TOTAL POINTS: ${document.getElementById('army-total').innerText}`, 105, 28, null, null, 'center');
+
+        let y = 40; 
         
-        doc.setFontSize(18);
-        doc.text("ARMY ROSTER - TACTICS", 105, 15, null, null, "center");
-        doc.setFontSize(10);
-        doc.text(`Total Points: ${document.getElementById('army-total').innerText}`, 105, 22, null, null, "center");
-        
-        y = 30;
+        document.querySelectorAll('.unit-card').forEach((c, i) => {
+            if (y > 240) { doc.addPage(); doc.setFillColor(20, 20, 20); doc.rect(0, 0, 210, 297, 'F'); y = 20; }
 
-        document.querySelectorAll('.unit-card').forEach((card, index) => {
-            if (y > 250) { doc.addPage(); y = 20; }
-
-            const name = card.querySelector('.u-name').value || card.querySelector('.u-type').value;
-            const type = card.querySelector('.u-type').value;
-            const pts = card.querySelector('.u-points').innerText;
-            const stats = Array.from(card.querySelectorAll('.stat-input')).map(i => i.value);
+            const type = c.querySelector('.u-type').value;
+            const isVehicle = type.includes('Vehicle') || type.includes('Tank') || type.includes('APC') || type.includes('Walker') || type.includes('Bike') || type.includes('Car');
             
-            // Card Box
-            doc.setFillColor(240, 240, 240);
-            doc.roundedRect(10, y, 190, 40, 3, 3, 'F');
-            doc.setDrawColor(50);
-            doc.roundedRect(10, y, 190, 40, 3, 3, 'S');
+            const uName = c.querySelector('.u-name').value || type;
+            const stats = Array.from(c.querySelectorAll('.stat-input')).map(i => i.value);
+            const pts = c.querySelector('.u-points').innerText + " PTS";
 
-            // Header
-            doc.setFont(undefined, 'bold');
-            doc.setFontSize(12);
-            doc.text(`${name} [${type}]`, 15, y+8);
-            doc.text(pts, 185, y+8, null, null, "right");
+            // Visual Difference based on Type
+            if (isVehicle) {
+                // VEHICLE CARD STYLE
+                doc.setDrawColor(139, 233, 253); // Cyan border
+                doc.setLineWidth(1);
+                doc.setFillColor(30, 35, 40);
+                doc.roundedRect(15, y, 180, 55, 2, 2, 'FD'); // Bigger box
+                
+                // Header
+                doc.setFillColor(139, 233, 253);
+                doc.rect(15, y, 180, 10, 'F');
+                doc.setTextColor(0, 0, 0); doc.setFont(undefined, 'bold'); doc.setFontSize(14);
+                doc.text(uName.toUpperCase(), 20, y+7);
+                doc.text(pts, 190, y+7, null, null, 'right');
 
-            // Stats Line
-            doc.setFontSize(9);
-            doc.setFont(undefined, 'normal');
-            doc.text(`SPD: ${stats[0]}  REA: ${stats[1]}  CBT: ${stats[2]}  TOU: ${stats[3]}  SAV: ${stats[4]}  KP: ${stats[5]}`, 15, y+15);
+                // Stats Row (Vehicle emphasis on TOU/KP)
+                doc.setTextColor(139, 233, 253); doc.setFontSize(10);
+                const labels = "SPD      REA      CBT      TOU      SAV      KP      CAP";
+                doc.text(labels, 20, y+18);
+                doc.setTextColor(255, 255, 255); doc.setFontSize(14);
+                let xStat = 20;
+                stats.forEach(s => { doc.text(s, xStat, y+25); xStat += 22; });
 
-            // Loadout Text construction
-            const stdWep = card.querySelector('.u-std-weapon').value;
-            const heavies = Array.from(card.querySelectorAll('.chk-heavy:checked')).map(c => c.parentElement.innerText.split(' \n')[0]).join(', ');
-            const upgs = Array.from(card.querySelectorAll('.chk-upgrade:checked')).map(c => c.parentElement.innerText.split(' \n')[0]).join(', ');
-            const attach = card.querySelector('.u-attachment').value;
-            const notes = card.querySelector('.u-notes').value;
+                // Systems / Weapons
+                doc.setFontSize(10); doc.setTextColor(200, 200, 200);
+                const mobility = c.querySelector('.u-mobility').selectedOptions[0].text;
+                const weapons = [c.querySelector('.u-std-weapon').value, ...Array.from(c.querySelectorAll('input:checked')).map(cb=>cb.parentElement.innerText)].filter(w=>w!=="None");
+                
+                doc.text(`CHASSIS: ${mobility}`, 20, y+35);
+                doc.text("SYSTEMS:", 20, y+42);
+                doc.setTextColor(255, 255, 255);
+                doc.text(weapons.join(', '), 40, y+42, {maxWidth: 150});
 
-            let loadoutStr = `Wpn: ${stdWep}`;
-            if (heavies) loadoutStr += ` | Heavy: ${heavies}`;
-            if (upgs) loadoutStr += ` | Gear: ${upgs}`;
-            if (attach !== "None") loadoutStr += ` | Attached: ${attach}`;
-            
-            doc.setFontSize(8);
-            doc.text(loadoutStr, 15, y+22, {maxWidth: 180});
-            
-            if (notes) {
-                doc.setTextColor(100);
-                doc.text(`Notes: ${notes}`, 15, y+35);
-                doc.setTextColor(0);
+            } else {
+                // INFANTRY CARD STYLE
+                doc.setDrawColor(255, 184, 108); // Orange border
+                doc.setLineWidth(0.5);
+                doc.setFillColor(30, 30, 35);
+                doc.roundedRect(15, y, 180, 45, 2, 2, 'FD');
+
+                // Header
+                doc.setFillColor(255, 184, 108);
+                doc.rect(15, y, 180, 8, 'F');
+                doc.setTextColor(0, 0, 0); doc.setFont(undefined, 'bold'); doc.setFontSize(12);
+                doc.text(uName.toUpperCase(), 20, y+6);
+                doc.text(pts, 190, y+6, null, null, 'right');
+
+                // Stats
+                doc.setTextColor(255, 184, 108); doc.setFontSize(9);
+                doc.text("SPD    REA    CBT    TOU    SAV    KP", 20, y+15);
+                doc.setTextColor(255, 255, 255); doc.setFontSize(12);
+                doc.text(`${stats[0]}      ${stats[1]}      ${stats[2]}      ${stats[3]}      ${stats[4]}      ${stats[5]}`, 20, y+21);
+
+                // Gear
+                doc.setFontSize(9); doc.setTextColor(200, 200, 200);
+                const main = c.querySelector('.u-std-weapon').value;
+                const extras = Array.from(c.querySelectorAll('input:checked')).map(cb=>cb.parentElement.innerText);
+                const attach = c.querySelector('.u-attachment').value;
+                let gearStr = `Main: ${main}`;
+                if (extras.length) gearStr += ` | Upgrades: ${extras.join(', ')}`;
+                if (attach !== "None") gearStr += ` | Attached: ${attach}`;
+                
+                doc.text(gearStr, 20, y+30, {maxWidth: 170});
+                
+                // Notes
+                const notes = c.querySelector('.u-notes').value;
+                if(notes) {
+                    doc.setFont(undefined, 'italic');
+                    doc.text(`Notes: ${notes}`, 20, y+38);
+                }
             }
-
-            y += 45;
+            y += isVehicle ? 65 : 55;
         });
 
-        doc.save('my_army_list.pdf');
+        doc.save(`${armyName.replace(/\s/g,'_')}_Cards.pdf`);
     }
 </script>
 
