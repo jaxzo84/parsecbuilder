@@ -3,77 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tactics Force Builder - Final</title>
+    <title>Tactics Force Builder - Definitive Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root { --bg: #0d1117; --card: #161b22; --text: #c9d1d9; --accent: #58a6ff; --delete: #f85149; --border: #30363d; --success: #238636; --leader: #f2e05d; --clone: #8b5cf6; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-        .container { max-width: 1000px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 8px; border: 1px solid var(--border); }
-        .unit-card { background: #0d1117; padding: 20px; border-radius: 6px; margin-bottom: 25px; border-left: 5px solid var(--accent); position: relative; }
-        .grid-main { display: grid; grid-template-columns: 2.5fr 1.5fr 120px; gap: 15px; margin-bottom: 15px; }
+        .container { max-width: 1050px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .unit-card { background: #0d1117; padding: 20px; border-radius: 6px; margin-bottom: 25px; border-left: 5px solid var(--accent); position: relative; border-top: 1px solid var(--border); }
+        .grid-main { display: grid; grid-template-columns: 2fr 1.5fr 120px; gap: 15px; margin-bottom: 15px; }
         .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
         .stats-box { background: #161b22; padding: 5px; border-radius: 4px; border: 1px solid var(--border); text-align: center; }
-        .stats-label { font-size: 0.65rem; color: var(--accent); font-weight: bold; }
-        select, input, textarea { background: #0d1117; border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 4px; width: 100%; box-sizing: border-box; }
-        .section-label { font-size: 0.75rem; font-weight: bold; margin: 10px 0 5px; color: #8b949e; text-transform: uppercase; }
-        .leader-area { background: rgba(242, 224, 93, 0.05); border: 1px solid #4d451a; padding: 15px; border-radius: 4px; margin: 15px 0; }
-        .upgrade-tag { background: #30363d; padding: 5px 12px; border-radius: 15px; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; border: 1px solid #444; margin: 4px; }
+        .stats-label { font-size: 0.65rem; color: var(--accent); font-weight: bold; text-transform: uppercase; }
+        select, input, textarea { background: #0d1117; border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 4px; width: 100%; box-sizing: border-box; font-size: 0.9rem; }
+        .sub-config { background: #21262d; padding: 15px; border-radius: 4px; margin: 10px 0; border: 1px solid #444; }
+        .section-title { font-size: 0.75rem; font-weight: bold; margin-bottom: 8px; color: #8b949e; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
+        .upgrade-tag { background: #30363d; padding: 5px 12px; border-radius: 15px; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; border: 1px solid #444; margin: 4px; border-bottom: 2px solid var(--accent); }
         .tag-del { color: var(--delete); cursor: pointer; font-weight: bold; }
-        .flex-row { display: flex; gap: 10px; margin-bottom: 10px; }
-        .summary { font-size: 2.8rem; color: var(--accent); text-align: right; margin-top: 25px; font-weight: bold; border-top: 2px solid var(--border); padding-top: 15px; }
-        button { padding: 10px 15px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; transition: 0.2s; }
-        .btn-clone { background: var(--clone); color: white; margin-right: 10px; }
-        .btn-remove { background: transparent; color: var(--delete); font-size: 0.75rem; padding: 0; margin-top: 15px; }
+        .summary { font-size: 2.8rem; color: var(--accent); text-align: right; margin-top: 25px; font-weight: bold; text-shadow: 0 0 10px rgba(88,166,255,0.3); }
+        button { padding: 10px 18px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; transition: 0.2s; }
+        .btn-action { background: #30363d; color: white; border: 1px solid #444; margin-top: 5px; }
+        .btn-action:hover { background: #444; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-<div style="text-align:center; padding-bottom:20px;">
-    <h1 style="letter-spacing:4px; color:#fff; margin:0;">TACTICS FORCE BUILDER</h1>
+<div style="text-align:center; padding-bottom:30px;">
+    <h1 style="letter-spacing:5px; color:#fff; margin:0; font-size: 2.5rem;">TACTICS TERMINAL</h1>
+    <p style="color:var(--accent); margin:5px 0 0; font-weight:bold; letter-spacing:1px;">Force Construction & Logistics Engine</p>
 </div>
 
 <div class="container">
-    <input type="text" id="force-name" placeholder="Army Name (e.g. Blood Ravens Strike Force)" style="font-size: 1.6rem; margin-bottom: 25px; text-align:center" oninput="saveData()">
+    <input type="text" id="force-name" placeholder="ENTER FORCE DESIGNATION..." style="font-size: 1.8rem; margin-bottom: 30px; text-align:center; border-color: var(--accent);" oninput="saveData()">
+    
     <div id="unit-list"></div>
-    <button style="background:var(--accent); color:white; width:100%; font-size:1.1rem" onclick="addUnit()">+ ADD NEW UNIT / VEHICLE</button>
-    <div style="margin-top:30px; display:flex; gap:15px; justify-content:center;">
-        <button style="background:var(--success); color:white; padding: 15px 30px" onclick="exportCards()">GENERATE UNIT CARDS (PDF)</button>
-        <button style="background:#444; color:white;" onclick="clearAll()">RESET BUILDER</button>
+    
+    <button style="background:var(--accent); color:#000; width:100%; font-size:1.2rem; margin-top:10px;" onclick="addUnit()">[+] COMMISSION NEW ASSET</button>
+    
+    <div style="margin-top:40px; display:flex; gap:20px; justify-content:center;">
+        <button style="background:var(--success); color:white; padding: 18px 40px; font-size:1.1rem" onclick="exportCards()">PRINT DATA CARDS (PDF)</button>
+        <button style="background:transparent; color:var(--delete); border: 1px solid var(--delete);" onclick="clearAll()">ERASE ALL DATA</button>
     </div>
-    <div class="summary">Total Force: <span id="total-pts">0</span> pts</div>
+    
+    <div class="summary">FORCE TOTAL: <span id="total-pts">0</span> PTS</div>
 </div>
 
-<div style="max-width:800px; margin:40px auto; font-size:0.75rem; color:#666; text-align:center;">
-    <strong>UNOFFICIAL FAN TOOL.</strong> Rules & IP © Modiphius Entertainment & Nordic Weasel Games. 
+<div style="max-width:800px; margin:50px auto; font-size:0.75rem; color:#666; text-align:center; line-height:1.6;">
+    <strong>UNOFFICIAL FAN DEVELOPMENT.</strong> Created as a tribute to <em>Five Parsecs From Home: Tactics</em>.<br>
+    Core Mechanics, Point Values, and Lore © Modiphius Entertainment & Nordic Weasel Games.
 </div>
 
 <script>
-    const UNIT_TEMPLATES = {
-        "Core Infantry": { pts: 20, spd: '4"', cbt: '4', tou: '4', arm: '6+' },
-        "Specialist": { pts: 30, spd: '4"', cbt: '4', tou: '4', arm: '5+' },
-        "Elite": { pts: 40, spd: '5"', cbt: '3', tou: '4', arm: '4+' },
-        "Support": { pts: 35, spd: '3"', cbt: '4', tou: '5', arm: '4+' },
-        "Leader": { pts: 25, spd: '4"', cbt: '3', tou: '4', arm: '5+' },
-        "Vehicle": { pts: 50, spd: '8"', cbt: '4', tou: '6', arm: '3+' }
+    const UNIT_TYPES = {
+        "Core Infantry": { base: 20, spd: '4"', cbt: '4', tou: '4', arm: '6+' },
+        "Specialist": { base: 30, spd: '4"', cbt: '4', tou: '4', arm: '5+' },
+        "Elite": { base: 40, spd: '5"', cbt: '3', tou: '4', arm: '4+' },
+        "Support": { base: 35, spd: '3"', cbt: '4', tou: '5', arm: '4+' },
+        "Leader": { base: 25, spd: '4"', cbt: '3', tou: '4', arm: '5+' },
+        "Vehicle": { base: 0, spd: '0', cbt: '4', tou: '0', arm: '0' } // Calculated via Chassis
+    };
+
+    const VEH_CHASSIS = {
+        "Light": { cost: 30, tou: '5', arm: '5+' },
+        "Medium": { cost: 50, tou: '6', arm: '4+' },
+        "Heavy": { cost: 80, tou: '8', arm: '3+' }
+    };
+
+    const VEH_PROPULSION = {
+        "Wheels": { cost: 0, spd: '10"' },
+        "Tracks": { cost: 5, spd: '8"' },
+        "Walker": { cost: 10, spd: '6"' },
+        "Grav": { cost: 20, spd: '12"' }
     };
 
     const UPGRADES = [
         { name: "Specialist Weapon", cost: 5 }, { name: "Heavy Weapon", cost: 10 },
-        { name: "Jump Packs (Inf)", cost: 8 }, { name: "Medical Kit", cost: 5 },
-        { name: "Enhanced Armor", cost: 6 }, { name: "Infiltration Training", cost: 8 },
-        { name: "Targeting Computer (Veh)", cost: 12 }, { name: "Reinforced Hull (Veh)", cost: 15 },
-        { name: "Point Defense (Veh)", cost: 8 }, { name: "Camo Gear", cost: 5 }
+        { name: "Jump Packs", cost: 8 }, { name: "Medical Kit", cost: 5 },
+        { name: "Enhanced Armor", cost: 6 }, { name: "Camo Gear", cost: 5 },
+        { name: "Targeting Computer (Veh)", cost: 12 }, { name: "Point Defense (Veh)", cost: 8 }
     ];
 
     const LEADER_GEAR = [
         { name: "Power Weapon", cost: 5 }, { name: "Plasma Pistol", cost: 4 },
-        { name: "Command Radio", cost: 5 }, { name: "Bionic Eye", cost: 3 },
-        { name: "Energy Shield", cost: 8 }
+        { name: "Command Radio", cost: 5 }, { name: "Energy Shield", cost: 8 }
     ];
 
     function addUnit(data = null) {
         const id = data?.id || Date.now() + Math.random();
-        const unit = data || { id, name: '', type: 'Core Infantry', ...UNIT_TEMPLATES["Core Infantry"], upgrades: [], leaderGear: [], desc: '' };
+        const unit = data || { 
+            id, name: '', type: 'Core Infantry', 
+            vChassis: 'Light', vProp: 'Wheels',
+            spd: '4"', cbt: '4', tou: '4', arm: '6+', 
+            upgrades: [], leaderGear: [], desc: '' 
+        };
         renderUnit(unit);
         saveData();
     }
@@ -84,43 +106,78 @@
         div.className = 'unit-card';
         div.dataset.id = unit.id;
 
-        let typeOpts = Object.keys(UNIT_TEMPLATES).map(t => `<option value="${t}" ${unit.type === t ? 'selected' : ''}>${t}</option>`).join('');
-        let upgOpts = UPGRADES.map((u, i) => `<option value="${i}">${u.name} (+${u.cost})</option>`).join('');
-        let leadOpts = LEADER_GEAR.map((u, i) => `<option value="${i}">${u.name} (+${u.cost})</option>`).join('');
+        let typeOpts = Object.keys(UNIT_TYPES).map(t => `<option value="${t}" ${unit.type === t ? 'selected' : ''}>${t}</option>`).join('');
+        let chassisOpts = Object.keys(VEH_CHASSIS).map(c => `<option value="${c}" ${unit.vChassis === c ? 'selected' : ''}>${c} Chassis</option>`).join('');
+        let propOpts = Object.keys(VEH_PROPULSION).map(p => `<option value="${p}" ${unit.vProp === p ? 'selected' : ''}>${p}</option>`).join('');
 
         div.innerHTML = `
             <div class="grid-main">
-                <div><label>Unit Name</label><input type="text" class="u-name" value="${unit.name}" oninput="saveData()"></div>
-                <div><label>Type</label><select class="u-type" onchange="applyTemplate(this)">${typeOpts}</select></div>
-                <div><label>Total Pts</label><input type="text" class="u-pts-display" readonly style="color:var(--accent); font-weight:bold; font-size:1.2rem"></div>
+                <div><label class="section-title">Designation</label><input type="text" class="u-name" value="${unit.name}" oninput="saveData()"></div>
+                <div><label class="section-title">Asset Type</label><select class="u-type" onchange="toggleVehPanel(this)">${typeOpts}</select></div>
+                <div><label class="section-title">Logistics Pts</label><input type="text" class="u-pts-display" readonly style="color:var(--accent); font-weight:bold; font-size:1.2rem"></div>
             </div>
+
+            <div class="sub-config veh-panel ${unit.type === 'Vehicle' ? '' : 'hidden'}">
+                <div class="section-title" style="color:var(--accent)">Vehicle Configuration</div>
+                <div class="flex-row">
+                    <select class="v-chassis" onchange="saveData()">${chassisOpts}</select>
+                    <select class="v-prop" onchange="saveData()">${propOpts}</select>
+                </div>
+            </div>
+
             <div class="stats-row">
                 <div class="stats-box"><div class="stats-label">SPD</div><input type="text" class="u-spd" value="${unit.spd}" oninput="saveData()"></div>
                 <div class="stats-box"><div class="stats-label">CBT</div><input type="text" class="u-cbt" value="${unit.cbt}" oninput="saveData()"></div>
                 <div class="stats-box"><div class="stats-label">TOU</div><input type="text" class="u-tou" value="${unit.tou}" oninput="saveData()"></div>
                 <div class="stats-box"><div class="stats-label">ARM</div><input type="text" class="u-arm" value="${unit.arm}" oninput="saveData()"></div>
             </div>
-            
-            <div class="section-label">Upgrades</div>
-            <div class="flex-row"><select class="upg-drop">${upgOpts}</select><button onclick="addItem(this, UPGRADES, '.u-tags')">ADD</button></div>
-            <div class="u-tags" style="display:flex; flex-wrap:wrap;"></div>
 
-            <div class="leader-area">
-                <div class="section-label" style="color:var(--leader)">Leader Upgrades</div>
-                <div class="flex-row"><select class="lead-drop">${leadOpts}</select><button onclick="addItem(this, LEADER_GEAR, '.l-tags')">ADD</button></div>
-                <div class="l-tags" style="display:flex; flex-wrap:wrap;"></div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                <div>
+                    <div class="section-title">Unit Upgrades</div>
+                    <div class="flex-row">
+                        <select class="upg-drop">${UPGRADES.map((u,i)=>`<option value="${i}">${u.name} (+${u.cost})</option>`).join('')}</select>
+                        <button class="btn-action" onclick="addItem(this, UPGRADES, '.u-tags')">ADD</button>
+                    </div>
+                    <div class="u-tags" style="display:flex; flex-wrap:wrap;"></div>
+                </div>
+                <div class="leader-area">
+                    <div class="section-title" style="color:var(--leader)">⭐ Leader Gear</div>
+                    <div class="flex-row">
+                        <select class="lead-drop">${LEADER_GEAR.map((u,i)=>`<option value="${i}">${u.name} (+${u.cost})</option>`).join('')}</select>
+                        <button class="btn-action" onclick="addItem(this, LEADER_GEAR, '.l-tags')">ADD</button>
+                    </div>
+                    <div class="l-tags" style="display:flex; flex-wrap:wrap;"></div>
+                </div>
             </div>
 
-            <textarea class="u-desc" placeholder="Notes & Weapons..." oninput="saveData()">${unit.desc}</textarea>
-            <div style="display:flex; justify-content: space-between; align-items: center;">
-                <button class="btn-remove" onclick="this.closest('.unit-card').remove(); saveData();">[ REMOVE ]</button>
-                <button class="btn-clone" onclick="cloneUnit(this)">CLONE UNIT</button>
+            <textarea class="u-desc" placeholder="Operational Notes, Weapon Stats, Damage Track..." style="margin-top:15px; height:80px;">${unit.desc}</textarea>
+            
+            <div style="display:flex; justify-content: space-between; align-items: center; margin-top:15px;">
+                <button style="background:transparent; color:var(--delete); font-size:0.7rem;" onclick="this.closest('.unit-card').remove(); saveData();">[ DECOMMISSION ]</button>
+                <button class="btn-action" style="border-color:var(--clone); color:var(--clone)" onclick="cloneUnit(this)">CLONE ASSET</button>
             </div>
         `;
         list.appendChild(div);
         if(unit.upgrades) unit.upgrades.forEach(u => renderTag(div.querySelector('.u-tags'), u));
         if(unit.leaderGear) unit.leaderGear.forEach(u => renderTag(div.querySelector('.l-tags'), u));
         updateTotal();
+    }
+
+    function toggleVehPanel(select) {
+        const card = select.closest('.unit-card');
+        const panel = card.querySelector('.veh-panel');
+        if(select.value === 'Vehicle') {
+            panel.classList.remove('hidden');
+        } else {
+            panel.classList.add('hidden');
+            const tpl = UNIT_TYPES[select.value];
+            card.querySelector('.u-spd').value = tpl.spd;
+            card.querySelector('.u-cbt').value = tpl.cbt;
+            card.querySelector('.u-tou').value = tpl.tou;
+            card.querySelector('.u-arm').value = tpl.arm;
+        }
+        saveData();
     }
 
     function cloneUnit(btn) {
@@ -130,6 +187,8 @@
             id: Date.now() + Math.random(),
             name: card.querySelector('.u-name').value + " (Copy)",
             type: card.querySelector('.u-type').value,
+            vChassis: card.querySelector('.v-chassis').value,
+            vProp: card.querySelector('.v-prop').value,
             spd: card.querySelector('.u-spd').value,
             cbt: card.querySelector('.u-cbt').value,
             tou: card.querySelector('.u-tou').value,
@@ -139,13 +198,6 @@
             desc: card.querySelector('.u-desc').value
         };
         renderUnit(cloneData);
-        saveData();
-    }
-
-    function applyTemplate(select) {
-        const card = select.closest('.unit-card');
-        const tpl = UNIT_TEMPLATES[select.value];
-        ['spd','cbt','tou','arm'].forEach(s => card.querySelector('.u-'+s).value = tpl[s]);
         saveData();
     }
 
@@ -167,11 +219,25 @@
     function updateTotal() {
         let grand = 0;
         document.querySelectorAll('.unit-card').forEach(card => {
-            const base = UNIT_TEMPLATES[card.querySelector('.u-type').value].pts;
+            const type = card.querySelector('.u-type').value;
+            let base = 0;
+            
+            if(type === 'Vehicle') {
+                const cVal = VEH_CHASSIS[card.querySelector('.v-chassis').value];
+                const pVal = VEH_PROPULSION[card.querySelector('.v-prop').value];
+                base = cVal.cost + pVal.cost;
+                card.querySelector('.u-spd').value = pVal.spd;
+                card.querySelector('.u-tou').value = cVal.tou;
+                card.querySelector('.u-arm').value = cVal.arm;
+            } else {
+                base = UNIT_TYPES[type].base;
+            }
+
             let extras = 0;
             card.querySelectorAll('.upgrade-tag').forEach(t => extras += parseInt(t.dataset.cost));
-            card.querySelector('.u-pts-display').value = base + extras;
-            grand += base + extras;
+            const total = base + extras;
+            card.querySelector('.u-pts-display').value = total;
+            grand += total;
         });
         document.getElementById('total-pts').innerText = grand;
     }
@@ -183,11 +249,12 @@
             const getTags = (selector) => Array.from(card.querySelectorAll(selector)).map(t => ({name: t.dataset.name, cost: t.dataset.cost}));
             units.push({
                 id: card.dataset.id, name: card.querySelector('.u-name').value, type: card.querySelector('.u-type').value,
+                vChassis: card.querySelector('.v-chassis').value, vProp: card.querySelector('.v-prop').value,
                 spd: card.querySelector('.u-spd').value, cbt: card.querySelector('.u-cbt').value, tou: card.querySelector('.u-tou').value, arm: card.querySelector('.u-arm').value,
                 upgrades: getTags('.u-tags .upgrade-tag'), leaderGear: getTags('.l-tags .upgrade-tag'), desc: card.querySelector('.u-desc').value
             });
         });
-        localStorage.setItem('tactics_final_v1', JSON.stringify({ name: document.getElementById('force-name').value, units }));
+        localStorage.setItem('tactics_definitive_v1', JSON.stringify({ name: document.getElementById('force-name').value, units }));
     }
 
     function exportCards() {
@@ -195,30 +262,32 @@
         const doc = new jsPDF();
         let x = 10, y = 10;
         document.querySelectorAll('.unit-card').forEach(card => {
-            doc.setDrawColor(0).rect(x, y, 90, 80);
-            doc.setFillColor(30).rect(x, y, 90, 12, 'F');
-            doc.setTextColor(255).setFontSize(14).setFont(undefined, 'bold').text(card.querySelector('.u-name').value.toUpperCase() || 'UNIT', x+3, y+8);
+            doc.setDrawColor(0).rect(x, y, 90, 85);
+            doc.setFillColor(22, 27, 34).rect(x, y, 90, 12, 'F');
+            doc.setTextColor(255).setFontSize(14).setFont(undefined, 'bold').text(card.querySelector('.u-name').value.toUpperCase() || 'ASSET', x+3, y+8);
             
-            doc.setTextColor(0).setFontSize(11).text(`SPD ${card.querySelector('.u-spd').value} | CBT ${card.querySelector('.u-cbt').value} | TOU ${card.querySelector('.u-tou').value} | ARM ${card.querySelector('.u-arm').value}`, x+3, y+19);
+            doc.setTextColor(0).setFontSize(10).text(`SPD ${card.querySelector('.u-spd').value} | CBT ${card.querySelector('.u-cbt').value} | TOU ${card.querySelector('.u-tou').value} | ARM ${card.querySelector('.u-arm').value}`, x+3, y+19);
             
-            doc.setFontSize(8).setFont(undefined, 'normal');
-            let upgs = "UPGRADES: " + Array.from(card.querySelectorAll('.u-tags .upgrade-tag')).map(t => t.dataset.name).join(', ');
-            let lead = "LEADER: " + Array.from(card.querySelectorAll('.l-tags .upgrade-tag')).map(t => t.dataset.name).join(', ');
-            doc.text(doc.splitTextToSize(upgs, 84), x+3, y+26);
-            doc.text(doc.splitTextToSize(lead, 84), x+3, y+34);
-            doc.text(doc.splitTextToSize(card.querySelector('.u-desc').value, 84), x+3, y+48);
+            doc.setFontSize(7.5).setFont(undefined, 'normal');
+            let upgs = "SYSTEMS: " + Array.from(card.querySelectorAll('.u-tags .upgrade-tag')).map(t => t.dataset.name).join(', ');
+            let lead = "LEADER/CMD: " + Array.from(card.querySelectorAll('.l-tags .upgrade-tag')).map(t => t.dataset.name).join(', ');
+            doc.text(doc.splitTextToSize(upgs, 84), x+3, y+27);
+            doc.text(doc.splitTextToSize(lead, 84), x+3, y+37);
             
-            doc.setFontSize(12).setFont(undefined, 'bold').text(`${card.querySelector('.u-pts-display').value} PTS`, x+68, y+76);
+            doc.text(doc.splitTextToSize(card.querySelector('.u-desc').value, 84), x+3, y+52);
+            
+            doc.setFontSize(12).setFont(undefined, 'bold').text(`${card.querySelector('.u-pts-display').value} PTS`, x+68, y+81);
 
-            x += 95; if(x > 150) { x = 10; y += 85; }
+            x += 95; if(x > 150) { x = 10; y += 90; }
             if(y > 200) { doc.addPage(); x = 10; y = 10; }
         });
-        doc.save("Tactics_Index_Cards.pdf");
+        doc.save("Tactics_Asset_Cards.pdf");
     }
 
-    function clearAll() { if(confirm("Clear all data?")) { localStorage.clear(); location.reload(); } }
+    function clearAll() { if(confirm("ABORT OPERATION: Erase all data?")) { localStorage.clear(); location.reload(); } }
+    
     window.onload = function() {
-        const saved = JSON.parse(localStorage.getItem('tactics_final_v1'));
+        const saved = JSON.parse(localStorage.getItem('tactics_definitive_v1'));
         if (saved) {
             document.getElementById('force-name').value = saved.name;
             saved.units.forEach(u => renderUnit(u));
