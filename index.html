@@ -3,202 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tactics Terminal - Briefing Room Ed.</title>
+    <title>Tactics Terminal - Arsenal & Veterans</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root { --bg: #0d1117; --card: #161b22; --text: #c9d1d9; --accent: #ffb86c; --border: #444c56; --ok: #50fa7b; --err: #ff5555; }
+        :root { --bg: #0d1117; --card: #161b22; --text: #c9d1d9; --accent: #ffb86c; --border: #444c56; --ok: #50fa7b; --err: #ff5555; --char: #bd93f9; --veh: #8be9fd; --vet: #ff79c6; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 10px; margin: 0; font-size: 13px; }
-        .container { max-width: 950px; margin: 0 auto; background: var(--card); padding: 15px; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .container { max-width: 1100px; margin: 0 auto; background: var(--card); padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
+        .platoon-status { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin-bottom: 15px; }
+        .val-card { background: #0d1117; padding: 8px; border-radius: 4px; border-bottom: 3px solid #444; text-align: center; font-weight: bold; font-size: 0.8rem; }
+        .val-card.valid { border-color: var(--ok); color: var(--ok); }
+        .val-card.invalid { border-color: var(--err); color: var(--err); }
         
-        .platoon-status { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 15px; }
-        .val-card { background: #0d1117; padding: 8px; border-radius: 4px; border-bottom: 3px solid #444; text-align: center; }
-        .val-card.valid { border-color: var(--ok); }
-        .val-card.invalid { border-color: var(--err); }
-
-        .unit-card { background: #0d1117; padding: 12px; border-radius: 6px; margin-bottom: 12px; border-left: 4px solid var(--accent); border-top: 1px solid #30363d; }
-        .char-card { border-left-color: #bd93f9; }
-        .veh-card { border-left-color: #8be9fd; }
+        .unit-card { background: #0d1117; padding: 12px; border-radius: 6px; margin-bottom: 15px; border-left: 5px solid var(--accent); border-top: 1px solid #30363d; }
+        .role-Character { border-left-color: var(--char); }
+        .role-Support { border-left-color: var(--veh); }
         
-        .grid-header { display: grid; grid-template-columns: 1.2fr 1fr 1fr 70px; gap: 8px; margin-bottom: 10px; }
-        .stats-row { display: flex; gap: 3px; margin-bottom: 10px; flex-wrap: wrap; }
-        .stats-box { background: #161b22; padding: 4px; border-radius: 4px; border: 1px solid var(--border); flex: 1; min-width: 38px; text-align: center; }
-        .stats-label { font-size: 0.5rem; color: var(--accent); font-weight: bold; }
-        .stats-box input { background: transparent; border: none; text-align: center; color: white; width: 100%; font-size: 0.8rem; font-weight: bold; outline: none; }
+        .header-grid { display: grid; grid-template-columns: 1.5fr 1fr 1.2fr 80px; gap: 10px; margin-bottom: 10px; }
+        .stats-row { display: flex; gap: 3px; margin-bottom: 10px; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 4px; }
+        .stats-box { flex: 1; text-align: center; border-right: 1px solid #333; }
+        .stats-label { font-size: 0.55rem; color: var(--accent); font-weight: bold; }
+        .stats-box input { background: transparent; border: none; text-align: center; color: white; width: 100%; font-size: 0.9rem; font-weight: bold; outline: none; }
+        
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .opt-box { background: rgba(255, 255, 255, 0.02); padding: 8px; border-radius: 4px; border: 1px solid #333; }
+        .opt-title { font-size: 0.6rem; color: #8b949e; font-weight: bold; display: block; margin-bottom: 5px; text-transform: uppercase; border-bottom: 1px solid #333; }
+        
+        .upgrade-item { display: block; font-size: 0.7rem; margin-bottom: 2px; cursor: pointer; }
+        .upgrade-item input { width: auto; margin-right: 5px; }
 
-        .extra-section { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0; }
-        .sub-panel { background: rgba(255, 255, 255, 0.03); padding: 8px; border-radius: 4px; border: 1px solid #333; }
-        .panel-title { font-size: 0.6rem; text-transform: uppercase; color: #8b949e; margin-bottom: 5px; display: block; }
-
-        select, input, textarea { background: #161b22; border: 1px solid var(--border); color: #fff; padding: 5px; border-radius: 4px; width: 100%; font-size: 0.8rem; }
-        .btn-row { display: flex; gap: 10px; margin-top: 15px; }
-        .btn { padding: 12px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; flex: 1; transition: 0.2s; }
-        .btn-add { background: var(--accent); color: black; }
-        .btn-export { background: #6272a4; color: white; }
-        .total-banner { font-size: 2.2rem; color: var(--accent); text-align: right; font-weight: bold; margin-top: 15px; border-top: 2px solid var(--border); }
+        select, input, textarea { background: #161b22; border: 1px solid var(--border); color: #fff; padding: 4px; border-radius: 4px; width: 100%; font-size: 0.75rem; }
+        .total-banner { font-size: 2.8rem; color: var(--accent); text-align: right; font-weight: bold; margin-top: 15px; border-top: 2px solid var(--border); }
+        .btn { padding: 10px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div style="text-align:center; padding-bottom:10px;">
-        <h2 style="letter-spacing:4px; margin:0; color:white;">TACTICS TERMINAL</h2>
-        <small style="color:var(--accent)">BRIEFING ROOM EDITION</small>
+        <h2 style="letter-spacing:5px; margin:0; color:white;">TACTICS TERMINAL</h2>
+        <small style="color:var(--accent)">ARSENAL & VETERAN SUPREME</small>
     </div>
-
     <div class="platoon-status" id="platoon-val"></div>
-    
     <div id="unit-list"></div>
-    
-    <div class="btn-row">
-        <button class="btn btn-add" onclick="addUnit()">+ ADD ELEMENT</button>
-        <button class="btn btn-export" onclick="exportToText()">📋 COPY INTEL BRIEFING</button>
+    <div style="display:flex; gap:10px; margin-top:20px;">
+        <button class="btn" style="flex:1; background:var(--accent); color:black;" onclick="addUnit()">+ ADD NEW ELEMENT</button>
+        <button class="btn" style="flex:1; background:var(--ok); color:black;" onclick="exportToPDF()">🖨️ PRINT ROSTER (PDF)</button>
     </div>
-
     <div class="total-banner"><span id="total-pts">0</span> PTS</div>
 </div>
 
 <script>
-    const DATA_MAP = {
-        "Infantry": { wN: "Military Rifle", wR: '18"', wS: "2", wD: "1", wT: "-", spd: '4"', rea: '3', cbt: '4', tou: '4', sav: '5+' },
-        "Recon": { wN: "Marksman Rifle", wR: '30"', wS: "1", wD: "1", wT: "Accurate", spd: '5"', rea: '4', cbt: '4', tou: '3', sav: '6+' },
-        "Storm": { wN: "Assault Carbine", wR: '12"', wS: "3", wD: "1", wT: "-", spd: '4"', rea: '3', cbt: '3', tou: '5', sav: '4+' },
-        "Weapon Team": { wN: "Heavy Machinegun", wR: '24"', wS: "4", wD: "1", wT: "Rapid", spd: '3"', rea: '3', cbt: '4', tou: '4', sav: '5+' },
-        "Light Vehicle": { wN: "Auto-Cannon", wR: '30"', wS: "2", wD: "3", wT: "Impact", spd: '10"', rea: '-', cbt: '-', tou: '5', sav: '-' },
-        "Main Battle Tank": { wN: "Battle Cannon", wR: '36"', wS: "1", wD: "4", wT: "Area 2\"", spd: '8"', rea: '-', cbt: '-', tou: '7', sav: '-' },
-        "Leader": { wN: "Hand Laser", wR: "10\"", wS: "1", wD: "1", wT: "Glare Sword", spd: "4\"", rea: "4", cbt: "3", tou: "4", sav: "4+" }
+    const SQUAD_DATA = {
+        "Infantry Squad": { p: 27, gear: "Rifles, LMG, Frag", upgrades: {"Laser Rifles (+4)":4, "Hyper Blaster (+4)":4, "Fury Rifle (+5)":5, "Plasma Rifle (-2)":-2}, stats: {spd:'4"', rea:'3', cbt:'4', tou:'4', sav:'5+', kp:'1'} },
+        "Recon Squad": { p: 23, gear: "Rifles, Precision Rifle", upgrades: {"Laser Rifles (+4)":4, "2nd Precision Rifle (+3)":3, "Service Pistols (+5)":5}, stats: {spd:'5"', rea:'4', cbt:'4', tou:'3', sav:'6+', kp:'1'} },
+        "Storm Squad": { p: 28, gear: "Shotguns, Blades, Axe, Frag/Fog", upgrades: {"Blasters (+5)":5, "Fusion Rifle (+8)":8, "Flame Projector (+4)":4, "Powered Claw (Sgt) (+2)":2}, stats: {spd:'4"', rea:'3', cbt:'3', tou:'5', sav:'4+', kp:'1'} }
+    };
+
+    const VET_SKILLS = {
+        Squad: { "None":0, "Brave (+10)":10, "Tank Hunters (+15)":15, "Keen Shots (+10)":10, "Brawlers (+5)":5, "Fearless (+5)":5, "Quick (+10)":10 },
+        Sergeant: { "None":0, "Rugged (+5)":5, "Motivator (+5)":5, "Fighter (+5)":5, "Tactics (+10)":10, "Alert (+5)":5 },
+        Individual: { "None":0, "Gun-slinging (+5)":5, "Quick Feet (+5)":5, "Deadly Accuracy (+5)":5, "Lucky (+5)":5, "Skilled Leader (+5)":5, "Expert Fighter (+5)":5 },
+        GunCrew: { "None":0, "Defend Guns (+5)":5, "Fortified (+5)":5, "Gun Drill (+10)":10, "Target Selection (+5)":5 },
+        Vehicle: { "None":0, "Gunnery (+15)":15, "Command (+10)":10, "Driving (+10)":10, "Damage Control (+5)":5, "Improvised Armor (+10)":10 }
     };
 
     function addUnit() {
-        const id = Date.now() + Math.random();
-        renderUnit({ id, role: 'Troops (Squad)', subType: 'Infantry' });
-        saveData();
-    }
-
-    function renderUnit(u) {
+        const id = Date.now();
         const list = document.getElementById('unit-list');
         const div = document.createElement('div');
         div.className = "unit-card";
-        div.dataset.id = u.id;
-
         div.innerHTML = `
-            <div class="grid-header">
-                <input type="text" class="u-name" placeholder="Name/ID">
-                <select class="u-role" onchange="updateSubOptions(this)">
+            <button style="float:right; background:var(--err); color:white; border:none; border-radius:3px; cursor:pointer;" onclick="this.closest('.unit-card').remove(); saveData();">REMOVE</button>
+            <div class="header-grid">
+                <input type="text" class="u-name" placeholder="Unit Name">
+                <select class="u-role" onchange="updateSubTypes(this)">
                     <option>Troops (Squad)</option><option>Character</option><option>Support</option><option>Specialist</option>
                 </select>
-                <select class="u-sub" onchange="applyBaseStats(this)"></select>
+                <select class="u-type" onchange="applyBase(this)"></select>
                 <input type="text" class="u-pts" readonly style="color:var(--accent); font-weight:bold; text-align:center">
             </div>
             <div class="stats-row">
-                ${['SPD','REA','CBT','TOU','KILL','SAV','TRA'].map(s=>`
-                <div class="stats-box"><div class="stats-label">${s}</div><input type="text" class="u-${s.toLowerCase()}" oninput="saveData()"></div>`).join('')}
+                ${['SPD','REA','CBT','TOU','SAV','KP'].map(s=>`<div class="stats-box"><div class="stats-label">${s}</div><input type="text" class="u-${s.toLowerCase()}"></div>`).join('')}
             </div>
-            <div class="extra-section">
-                <div class="sub-panel">
-                    <span class="panel-title">Veteran Skill</span>
-                    <select class="u-vet" onchange="saveData()">
-                        <option>None</option><option>Marksman</option><option>Brawler</option><option>Tough</option><option>Medic</option>
-                    </select>
+            <div class="options-grid">
+                <div class="opt-box">
+                    <span class="opt-title">Arsenal Swaps</span>
+                    <div class="upgrades-area"></div>
                 </div>
-                <div class="sub-panel">
-                    <span class="panel-title">Attachments</span>
-                    <div style="display:flex; gap:10px;">
-                        <label><input type="checkbox" class="u-att" data-p="5" data-n="Scanner" onchange="saveData()"> Scanner</label>
-                        <label><input type="checkbox" class="u-att" data-p="5" data-n="Med-Kit" onchange="saveData()"> Med-Kit</label>
-                    </div>
+                <div class="opt-box">
+                    <span class="opt-title">Veteran Training</span>
+                    <div class="vet-area"></div>
                 </div>
-            </div>
-            <div class="wpn-section">
-                <div style="display:grid; grid-template-columns: 1.2fr 0.4fr 0.4fr 0.4fr 1.5fr; gap:4px;">
-                    <input type="text" class="w-n" placeholder="Weapon">
-                    <input type="text" class="w-r" placeholder="R">
-                    <input type="text" class="w-s" placeholder="S">
-                    <input type="text" class="w-d" placeholder="D">
-                    <input type="text" class="w-t" placeholder="Traits">
+                <div class="opt-box">
+                    <span class="opt-title" style="color:var(--veh)">Transport / Notes</span>
+                    <select class="u-transport" onchange="saveData()"><option value="0">None</option><option value="50">Rhino (APC) (+50)</option><option value="35">Light Transport (+35)</option></select>
+                    <textarea class="u-gear" style="height:35px; margin-top:5px;" placeholder="Traits/Rules"></textarea>
                 </div>
-            </div>
-            <div style="display:flex; gap:5px; margin-top:5px;">
-                <textarea class="u-desc" style="flex:1; height:25px;" placeholder="Operational notes..."></textarea>
-                <button onclick="this.closest('.unit-card').remove(); saveData();" style="background:var(--err); color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">X</button>
             </div>
         `;
         list.appendChild(div);
-        updateSubOptions(div.querySelector('.u-role'), u.subType);
+        updateSubTypes(div.querySelector('.u-role'));
     }
 
-    function updateSubOptions(roleSel, defaultSub = null) {
-        const card = roleSel.closest('.unit-card');
-        const subSel = card.querySelector('.u-sub');
-        const role = roleSel.value;
+    function updateSubTypes(sel) {
+        const card = sel.closest('.unit-card');
+        const typeSel = card.querySelector('.u-type');
+        const role = sel.value;
+        card.className = `unit-card role-${role.split(' ')[0]}`;
         
-        let opts = (role === "Support") ? ["Weapon Team", "Light Vehicle", "Main Battle Tank"] : 
-                   (role === "Character") ? ["Leader"] : ["Infantry", "Recon", "Storm"];
+        let opts = (role === "Troops (Squad)") ? Object.keys(SQUAD_DATA) : 
+                   (role === "Support") ? ["Light Tank (100)", "APC (50)", "Light Walker (70)", "Gun Crew (5)"] :
+                   (role === "Character") ? ["Minor (+10)", "Major (+20)", "Epic (+35)"] : ["Medic (+10)", "Tech (+5)", "Sharpshooter (+15)"];
 
-        subSel.innerHTML = opts.map(o => `<option ${o===defaultSub?'selected':''}>${o}</option>`).join('');
-        card.className = `unit-card ${role === "Character" ? "char-card" : role === "Support" ? "veh-card" : ""}`;
-        applyBaseStats(subSel);
+        typeSel.innerHTML = opts.map(o => `<option>${o}</option>`).join('');
+        applyBase(typeSel);
     }
 
-    function applyBaseStats(subSel) {
-        const card = subSel.closest('.unit-card');
-        const data = DATA_MAP[subSel.value];
-        if(!data) return;
+    function applyBase(sel) {
+        const card = sel.closest('.unit-card');
+        const type = sel.value;
+        const role = card.querySelector('.u-role').value;
+        
+        // Reset and Apply Base Stats
+        let data = SQUAD_DATA[type] || { p: parseInt(type.match(/\d+/)) || 10, gear: "Default", stats: {spd:'4"', rea:'2', cbt:'1', tou:'7', sav:'-', kp:'5'} };
+        if(role === "Character") data.stats = {spd:'4"', rea:'4', cbt:'3', tou:'4', sav:'4+', kp:'1'};
 
-        card.querySelector('.w-n').value = data.wN;
-        card.querySelector('.w-r').value = data.wR;
-        card.querySelector('.w-s').value = data.wS;
-        card.querySelector('.w-d').value = data.wD;
-        card.querySelector('.w-t').value = data.wT;
-        ['spd','rea','cbt','tou','sav'].forEach(s => card.querySelector('.u-'+s).value = data[s]);
-        card.querySelector('.u-kill').value = subSel.value.includes("Vehicle") || subSel.value.includes("Tank") ? "3" : "1";
-        card.querySelector('.u-tra').value = card.querySelector('.u-role').value === "Character" ? "Hero" : "Standard";
+        Object.keys(data.stats).forEach(s => card.querySelector(`.u-${s}`).value = data.stats[s]);
+        card.querySelector('.u-gear').value = data.gear;
+        card.dataset.baseP = data.p;
+
+        // Render Arsenals
+        const upgArea = card.querySelector('.upgrades-area');
+        upgArea.innerHTML = '';
+        if(data.upgrades) {
+            Object.entries(data.upgrades).forEach(([name, cost]) => {
+                upgArea.innerHTML += `<label class="upgrade-item"><input type="checkbox" class="u-mod" data-p="${cost}" onchange="saveData()"> ${name}</label>`;
+            });
+        }
+
+        // Render Veteran lists based on type
+        const vetArea = card.querySelector('.vet-area');
+        let v1 = "Squad", v2 = "Sergeant";
+        if(role === "Character") { v1 = "Individual"; v2 = "None"; }
+        else if(type.includes("Gun")) { v1 = "GunCrew"; v2 = "None"; }
+        else if(type.includes("Tank") || type.includes("APC") || type.includes("Walker")) { v1 = "Vehicle"; v2 = "None"; }
+
+        vetArea.innerHTML = `<small>${v1}:</small><select class="u-vet1" onchange="saveData()">${Object.keys(VET_SKILLS[v1]).map(k=>`<option>${k}</option>`)}</select>`;
+        if(v2 !== "None") vetArea.innerHTML += `<small>${v2}:</small><select class="u-vet2" onchange="saveData()">${Object.keys(VET_SKILLS[v2]).map(k=>`<option>${k}</option>`)}</select>`;
+
         saveData();
     }
 
     function saveData() {
-        let total = 0;
-        let c = { troops: 0, leaders: 0, support: 0, specs: 0 };
+        let total = 0; let counts = { l: 0, t: 0, s: 0 };
         document.querySelectorAll('.unit-card').forEach(card => {
-            const role = card.querySelector('.u-role').value;
-            const sub = card.querySelector('.u-sub').value;
-            let p = (role === "Character") ? 5 : (role === "Support" && sub === "Main Battle Tank") ? 70 : (role === "Support" && sub === "Light Vehicle") ? 40 : (role === "Specialist") ? 35 : 20;
-            if(card.querySelector('.u-vet').value !== "None") p += 5;
-            card.querySelectorAll('.u-att:checked').forEach(() => p += 5);
+            let p = parseInt(card.dataset.baseP) || 0;
+            card.querySelectorAll('.u-mod:checked').forEach(m => p += parseInt(m.dataset.p));
+            
+            const v1 = card.querySelector('.u-vet1');
+            const v2 = card.querySelector('.u-vet2');
+            if(v1) {
+                const category = card.querySelector('.u-role').value === "Character" ? "Individual" : 
+                                 card.querySelector('.u-type').value.includes("Gun") ? "GunCrew" : 
+                                 (card.querySelector('.u-type').value.includes("Tank") || card.querySelector('.u-type').value.includes("APC")) ? "Vehicle" : "Squad";
+                p += VET_SKILLS[category][v1.value] || 0;
+            }
+            if(v2) p += VET_SKILLS["Sergeant"][v2.value] || 0;
+            
+            p += parseInt(card.querySelector('.u-transport')?.value || 0);
             card.querySelector('.u-pts').value = p;
             total += p;
-            if(role === "Character") c.leaders++;
-            else if(role === "Troops (Squad)") c.troops++;
-            else if(role === "Support") c.support++;
-            else if(role === "Specialist") c.specs++;
+
+            const r = card.querySelector('.u-role').value;
+            if(r === "Character") counts.l++; else if(r.includes("Squad")) counts.t++; else if(r === "Support") counts.s++;
         });
         document.getElementById('total-pts').innerText = total;
-        const spMax = Math.ceil(c.troops / 2);
         document.getElementById('platoon-val').innerHTML = `
-            <div class="val-card ${c.leaders>=1&&c.leaders<=2?'valid':'invalid'}"><span>${c.leaders}/2</span><br><small>Leaders</small></div>
-            <div class="val-card ${c.troops>=2&&c.troops<=4?'valid':'invalid'}"><span>${c.troops}/4</span><br><small>Troops</small></div>
-            <div class="val-card ${c.support<c.troops&&c.troops>0?'valid':'invalid'}"><span>${c.support}<T</span><br><small>Support</small></div>
-            <div class="val-card ${c.specs<=spMax?'valid':'invalid'}"><span>${c.specs}/${spMax}</span><br><small>Specs</small></div>`;
+            <div class="val-card ${counts.l>=1?'valid':'invalid'}">LEADER: ${counts.l}/2</div>
+            <div class="val-card ${counts.t>=2?'valid':'invalid'}">SQUADS: ${counts.t}/4</div>
+            <div class="val-card ${counts.s < counts.t?'valid':'invalid'}">SUPPORT: ${counts.s}<${counts.t}</div>`;
     }
 
-    function exportToText() {
-        let text = `--- PLATOON INTEL BRIEFING ---\nTotal Points: ${document.getElementById('total-pts').innerText} pts\n\n`;
+    function exportToPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFontSize(16); doc.text("UNIFIED SPACE PLATOON ROSTER", 10, 15);
+        let y = 25;
         document.querySelectorAll('.unit-card').forEach(card => {
-            const name = card.querySelector('.u-name').value || "Unnamed Unit";
-            const role = card.querySelector('.u-role').value;
-            const sub = card.querySelector('.u-sub').value;
-            const pts = card.querySelector('.u-pts').value;
-            const vet = card.querySelector('.u-vet').value;
-            const atts = Array.from(card.querySelectorAll('.u-att:checked')).map(a => a.getAttribute('data-n')).join(', ');
-            
-            text += `[${pts} pts] ${name} (${role}: ${sub})\n`;
-            if(vet !== "None") text += `  > Skill: ${vet}\n`;
-            if(atts) text += `  > Attachments: ${atts}\n`;
-            text += `  > Stats: SPD ${card.querySelector('.u-spd').value} | REA ${card.querySelector('.u-rea').value} | CBT ${card.querySelector('.u-cbt').value} | TOU ${card.querySelector('.u-tou').value} | SAV ${card.querySelector('.u-sav').value}\n`;
-            text += `  > Weapon: ${card.querySelector('.w-n').value} (R:${card.querySelector('.w-r').value} S:${card.querySelector('.w-s').value} D:${card.querySelector('.w-d').value})\n\n`;
+            doc.setDrawColor(150); doc.rect(10, y, 190, 32);
+            doc.setFontSize(10); doc.text(`${card.querySelector('.u-name').value || 'Unit'} - ${card.querySelector('.u-type').value} (${card.querySelector('.u-pts').value} pts)`, 12, y+6);
+            doc.setFontSize(8); doc.text(`STATS: SPD ${card.querySelector('.u-spd').value} REA ${card.querySelector('.u-rea').value} CBT ${card.querySelector('.u-cbt').value} TOU ${card.querySelector('.u-tou').value} SAV ${card.querySelector('.u-sav').value} KP ${card.querySelector('.u-kp').value}`, 12, y+12);
+            doc.text(`GEAR: ${card.querySelector('.u-gear').value}`, 12, y+18);
+            const v1 = card.querySelector('.u-vet1')?.value || 'None';
+            const v2 = card.querySelector('.u-vet2')?.value || 'None';
+            doc.text(`VETERAN SKILLS: ${v1} / ${v2}`, 12, y+24);
+            y += 35; if(y > 270) { doc.addPage(); y = 20; }
         });
-        navigator.clipboard.writeText(text).then(() => alert("Intel Briefing copied to clipboard!"));
+        doc.save("Platoon_Roster.pdf");
     }
-
-    window.onload = () => addUnit();
+    window.onload = addUnit;
 </script>
 </body>
 </html>
