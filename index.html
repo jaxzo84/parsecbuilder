@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tactics Terminal - Master Logistics</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <title>Tactics Terminal - Briefing Room Ed.</title>
     <style>
         :root { --bg: #0d1117; --card: #161b22; --text: #c9d1d9; --accent: #ffb86c; --border: #444c56; --ok: #50fa7b; --err: #ff5555; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 10px; margin: 0; font-size: 13px; }
@@ -15,194 +14,190 @@
         .val-card.valid { border-color: var(--ok); }
         .val-card.invalid { border-color: var(--err); }
 
-        .unit-card { background: #0d1117; padding: 12px; border-radius: 6px; margin-bottom: 12px; border-left: 4px solid var(--accent); position: relative; border-top: 1px solid #30363d; }
+        .unit-card { background: #0d1117; padding: 12px; border-radius: 6px; margin-bottom: 12px; border-left: 4px solid var(--accent); border-top: 1px solid #30363d; }
         .char-card { border-left-color: #bd93f9; }
         .veh-card { border-left-color: #8be9fd; }
         
-        .grid-header { display: grid; grid-template-columns: 1.5fr 1fr 1fr 70px; gap: 8px; margin-bottom: 10px; }
-        
+        .grid-header { display: grid; grid-template-columns: 1.2fr 1fr 1fr 70px; gap: 8px; margin-bottom: 10px; }
         .stats-row { display: flex; gap: 3px; margin-bottom: 10px; flex-wrap: wrap; }
         .stats-box { background: #161b22; padding: 4px; border-radius: 4px; border: 1px solid var(--border); flex: 1; min-width: 38px; text-align: center; }
         .stats-label { font-size: 0.5rem; color: var(--accent); font-weight: bold; }
-        .stats-box input { background: transparent; border: none; text-align: center; color: white; width: 100%; font-size: 0.8rem; font-weight: bold; }
+        .stats-box input { background: transparent; border: none; text-align: center; color: white; width: 100%; font-size: 0.8rem; font-weight: bold; outline: none; }
 
         .extra-section { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0; }
         .sub-panel { background: rgba(255, 255, 255, 0.03); padding: 8px; border-radius: 4px; border: 1px solid #333; }
         .panel-title { font-size: 0.6rem; text-transform: uppercase; color: #8b949e; margin-bottom: 5px; display: block; }
 
         select, input, textarea { background: #161b22; border: 1px solid var(--border); color: #fff; padding: 5px; border-radius: 4px; width: 100%; font-size: 0.8rem; }
-        .btn { padding: 8px 12px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; }
+        .btn-row { display: flex; gap: 10px; margin-top: 15px; }
+        .btn { padding: 12px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; flex: 1; transition: 0.2s; }
+        .btn-add { background: var(--accent); color: black; }
+        .btn-export { background: #6272a4; color: white; }
         .total-banner { font-size: 2.2rem; color: var(--accent); text-align: right; font-weight: bold; margin-top: 15px; border-top: 2px solid var(--border); }
-        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div style="text-align:center; padding-bottom:10px;">
-        <h2 style="letter-spacing:4px; margin:0; color:white;">TACTICS MASTER LOGISTICS</h2>
-        <small style="color:var(--accent)">CAFFEINE CHAINGUN - FULL SQUAD SPECS</small>
+        <h2 style="letter-spacing:4px; margin:0; color:white;">TACTICS TERMINAL</h2>
+        <small style="color:var(--accent)">BRIEFING ROOM EDITION</small>
     </div>
 
     <div class="platoon-status" id="platoon-val"></div>
+    
     <div id="unit-list"></div>
-    <button class="btn" style="background:var(--accent); color:black; width:100%; font-size: 1rem;" onclick="addUnit()">+ ADD NEW PLATOON ELEMENT</button>
+    
+    <div class="btn-row">
+        <button class="btn btn-add" onclick="addUnit()">+ ADD ELEMENT</button>
+        <button class="btn btn-export" onclick="exportToText()">📋 COPY INTEL BRIEFING</button>
+    </div>
+
     <div class="total-banner"><span id="total-pts">0</span> PTS</div>
 </div>
 
 <script>
-    const ROLES = ["Troops (Squad)", "Character", "Support", "Specialist"];
-    
-    const INF_TYPES = {
-        "Infantry": { wN: "Military Rifle", wR: '18"', wS: "2", wD: "1", wT: "-", spd: '4"', rea: '3', cbt: '4', tou: '4', sav: '5+', p: 20 },
-        "Recon": { wN: "Marksman Rifle", wR: '30"', wS: "1", wD: "1", wT: "Accurate", spd: '5"', rea: '4', cbt: '4', tou: '3', sav: '6+', p: 20 },
-        "Storm": { wN: "Assault Carbine", wR: '12"', wS: "3", wD: "1", wT: "-", spd: '4"', rea: '3', cbt: '3', tou: '5', sav: '4+', p: 20 }
+    const DATA_MAP = {
+        "Infantry": { wN: "Military Rifle", wR: '18"', wS: "2", wD: "1", wT: "-", spd: '4"', rea: '3', cbt: '4', tou: '4', sav: '5+' },
+        "Recon": { wN: "Marksman Rifle", wR: '30"', wS: "1", wD: "1", wT: "Accurate", spd: '5"', rea: '4', cbt: '4', tou: '3', sav: '6+' },
+        "Storm": { wN: "Assault Carbine", wR: '12"', wS: "3", wD: "1", wT: "-", spd: '4"', rea: '3', cbt: '3', tou: '5', sav: '4+' },
+        "Weapon Team": { wN: "Heavy Machinegun", wR: '24"', wS: "4", wD: "1", wT: "Rapid", spd: '3"', rea: '3', cbt: '4', tou: '4', sav: '5+' },
+        "Light Vehicle": { wN: "Auto-Cannon", wR: '30"', wS: "2", wD: "3", wT: "Impact", spd: '10"', rea: '-', cbt: '-', tou: '5', sav: '-' },
+        "Main Battle Tank": { wN: "Battle Cannon", wR: '36"', wS: "1", wD: "4", wT: "Area 2\"", spd: '8"', rea: '-', cbt: '-', tou: '7', sav: '-' },
+        "Leader": { wN: "Hand Laser", wR: "10\"", wS: "1", wD: "1", wT: "Glare Sword", spd: "4\"", rea: "4", cbt: "3", tou: "4", sav: "4+" }
     };
-
-    const SUP_TYPES = {
-        "Weapon Team": { wN: "Heavy Machinegun", wR: '24"', wS: "4", wD: "1", wT: "Rapid", spd: '3"', rea: '3', cbt: '4', tou: '4', sav: '5+', p: 30 },
-        "Light Vehicle": { wN: "Auto-Cannon", wR: '30"', wS: "2", wD: "3", wT: "Impact", spd: '10"', rea: '-', cbt: '-', tou: '5', sav: '-', p: 40 },
-        "Main Battle Tank": { wN: "Battle Cannon", wR: '36"', s: "1", d: "4", t: "Area 2\"", spd: '8"', rea: '-', cbt: '-', tou: '7', sav: '-', p: 70 },
-        "Auxiliary": { wN: "Shotgun", wR: '8"', wS: "2", wD: "1", wT: "Impact", spd: '4"', rea: '3', cbt: '4', tou: '4', sav: '5+', p: 25 }
-    };
-
-    const VET_SKILLS = ["None", "Marksman (+1 REA Ranged)", "Brawler (+1 CBT Melee)", "Infiltrator (Forward Deploy)", "Tough (Ignore 1st Wound)", "Medic (Revive)"];
-    const ATTACHMENTS = [ {n: "Scanner", p: 5}, {n: "Med-Kit", p: 5}, {n: "Demo Charge", p: 10}, {n: "Comm-Link", p: 5} ];
 
     function addUnit() {
         const id = Date.now() + Math.random();
-        renderUnit({ id, name: '', role: 'Troops (Squad)', subType: 'Infantry', vet: 'None', atts: [], desc: '' });
+        renderUnit({ id, role: 'Troops (Squad)', subType: 'Infantry' });
+        saveData();
     }
 
     function renderUnit(u) {
         const list = document.getElementById('unit-list');
         const div = document.createElement('div');
-        div.className = `unit-card`;
+        div.className = "unit-card";
         div.dataset.id = u.id;
 
         div.innerHTML = `
             <div class="grid-header">
-                <input type="text" class="u-name" value="${u.name}" placeholder="Element Name" oninput="saveData()">
-                <select class="u-role" onchange="autoLoad(this)">${ROLES.map(r=>`<option ${u.role===r?'selected':''}>${r}</option>`).join('')}</select>
-                <select class="u-sub" onchange="autoLoad(this)"></select>
+                <input type="text" class="u-name" placeholder="Name/ID">
+                <select class="u-role" onchange="updateSubOptions(this)">
+                    <option>Troops (Squad)</option><option>Character</option><option>Support</option><option>Specialist</option>
+                </select>
+                <select class="u-sub" onchange="applyBaseStats(this)"></select>
                 <input type="text" class="u-pts" readonly style="color:var(--accent); font-weight:bold; text-align:center">
             </div>
-
             <div class="stats-row">
                 ${['SPD','REA','CBT','TOU','KILL','SAV','TRA'].map(s=>`
-                    <div class="stats-box">
-                        <div class="stats-label">${s}</div>
-                        <input type="text" class="u-${s.toLowerCase()}" oninput="saveData()">
-                    </div>`).join('')}
+                <div class="stats-box"><div class="stats-label">${s}</div><input type="text" class="u-${s.toLowerCase()}" oninput="saveData()"></div>`).join('')}
             </div>
-
             <div class="extra-section">
                 <div class="sub-panel">
-                    <span class="panel-title">Veteran Skill / Level</span>
+                    <span class="panel-title">Veteran Skill</span>
                     <select class="u-vet" onchange="saveData()">
-                        ${VET_SKILLS.map(s=>`<option>${s}</option>`).join('')}
+                        <option>None</option><option>Marksman</option><option>Brawler</option><option>Tough</option><option>Medic</option>
                     </select>
                 </div>
                 <div class="sub-panel">
                     <span class="panel-title">Attachments</span>
-                    <div style="display:flex; flex-wrap:wrap; gap:5px;">
-                        ${ATTACHMENTS.map(a=>`<label style="font-size:0.65rem;"><input type="checkbox" class="u-att" data-p="${a.p}" data-n="${a.n}" onchange="saveData()"> ${a.n}</label>`).join('')}
+                    <div style="display:flex; gap:10px;">
+                        <label><input type="checkbox" class="u-att" data-p="5" data-n="Scanner" onchange="saveData()"> Scanner</label>
+                        <label><input type="checkbox" class="u-att" data-p="5" data-n="Med-Kit" onchange="saveData()"> Med-Kit</label>
                     </div>
                 </div>
             </div>
-
             <div class="wpn-section">
                 <div style="display:grid; grid-template-columns: 1.2fr 0.4fr 0.4fr 0.4fr 1.5fr; gap:4px;">
-                    <input type="text" class="w-n" placeholder="Weapon" oninput="saveData()">
-                    <input type="text" class="w-r" placeholder="R" oninput="saveData()">
-                    <input type="text" class="w-s" placeholder="S" oninput="saveData()">
-                    <input type="text" class="w-d" placeholder="D" oninput="saveData()">
-                    <input type="text" class="w-t" placeholder="Traits" oninput="saveData()">
+                    <input type="text" class="w-n" placeholder="Weapon">
+                    <input type="text" class="w-r" placeholder="R">
+                    <input type="text" class="w-s" placeholder="S">
+                    <input type="text" class="w-d" placeholder="D">
+                    <input type="text" class="w-t" placeholder="Traits">
                 </div>
             </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <textarea class="u-desc" style="width:88%; height:30px;" placeholder="Unit notes / Swaps..." oninput="saveData()"></textarea>
-                <button onclick="this.closest('.unit-card').remove(); saveData();" style="background:none; border:none; color:var(--err); cursor:pointer; font-weight:bold;">DEL</button>
+            <div style="display:flex; gap:5px; margin-top:5px;">
+                <textarea class="u-desc" style="flex:1; height:25px;" placeholder="Operational notes..."></textarea>
+                <button onclick="this.closest('.unit-card').remove(); saveData();" style="background:var(--err); color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">X</button>
             </div>
         `;
         list.appendChild(div);
-        autoLoad(div.querySelector('.u-role'));
+        updateSubOptions(div.querySelector('.u-role'), u.subType);
     }
 
-    function autoLoad(sel) {
-        const card = sel.closest('.unit-card');
-        const role = card.querySelector('.u-role').value;
-        const sub = card.querySelector('.u-sub');
+    function updateSubOptions(roleSel, defaultSub = null) {
+        const card = roleSel.closest('.unit-card');
+        const subSel = card.querySelector('.u-sub');
+        const role = roleSel.value;
         
-        card.className = "unit-card";
-        if(role === "Character") card.classList.add("char-card");
-        if(role === "Support") card.classList.add("veh-card");
+        let opts = (role === "Support") ? ["Weapon Team", "Light Vehicle", "Main Battle Tank"] : 
+                   (role === "Character") ? ["Leader"] : ["Infantry", "Recon", "Storm"];
 
-        let options = "";
-        if(role === "Troops (Squad)" || role === "Specialist") options = Object.keys(INF_TYPES).map(t=>`<option>${t}</option>`).join('');
-        else if(role === "Support") options = Object.keys(SUP_TYPES).map(t=>`<option>${t}</option>`).join('');
-        else options = "<option>Leader Profile</option>";
-        
-        sub.innerHTML = options;
+        subSel.innerHTML = opts.map(o => `<option ${o===defaultSub?'selected':''}>${o}</option>`).join('');
+        card.className = `unit-card ${role === "Character" ? "char-card" : role === "Support" ? "veh-card" : ""}`;
+        applyBaseStats(subSel);
+    }
 
-        // Apply Data
-        let data = {};
-        if(role === "Character") {
-            data = { wN: "Hand Laser", wR: "10\"", wS: "1", wD: "1", wT: "Glare Sword", spd: "4\"", rea: "4", cbt: "3", tou: "4", sav: "4+", p: 5 };
-        } else {
-            const pool = (role === "Support") ? SUP_TYPES : INF_TYPES;
-            data = pool[sub.value] || pool[Object.keys(pool)[0]];
-        }
+    function applyBaseStats(subSel) {
+        const card = subSel.closest('.unit-card');
+        const data = DATA_MAP[subSel.value];
+        if(!data) return;
 
-        card.querySelector('.w-n').value = data.wN || "";
-        card.querySelector('.w-r').value = data.wR || "";
-        card.querySelector('.w-s').value = data.wS || "";
-        card.querySelector('.w-d').value = data.wD || "";
-        card.querySelector('.w-t').value = data.wT || "";
-        ['spd','rea','cbt','tou','sav'].forEach(s => card.querySelector('.u-'+s).value = data[s] || '-');
-        card.querySelector('.u-kill').value = (role === "Support" && sub.value.includes("Vehicle")) ? "3" : "1";
-        card.querySelector('.u-tra').value = (role === "Character") ? "Hero" : "Standard";
-
+        card.querySelector('.w-n').value = data.wN;
+        card.querySelector('.w-r').value = data.wR;
+        card.querySelector('.w-s').value = data.wS;
+        card.querySelector('.w-d').value = data.wD;
+        card.querySelector('.w-t').value = data.wT;
+        ['spd','rea','cbt','tou','sav'].forEach(s => card.querySelector('.u-'+s).value = data[s]);
+        card.querySelector('.u-kill').value = subSel.value.includes("Vehicle") || subSel.value.includes("Tank") ? "3" : "1";
+        card.querySelector('.u-tra').value = card.querySelector('.u-role').value === "Character" ? "Hero" : "Standard";
         saveData();
     }
 
-    function updateTotal() {
+    function saveData() {
         let total = 0;
         let c = { troops: 0, leaders: 0, support: 0, specs: 0 };
-        
         document.querySelectorAll('.unit-card').forEach(card => {
             const role = card.querySelector('.u-role').value;
             const sub = card.querySelector('.u-sub').value;
-            let p = 0;
-
-            if(role === "Character") { c.leaders++; p = 5; }
-            else if(role === "Troops (Squad)") { c.troops++; p = 20; }
-            else if(role === "Support") { c.support++; p = SUP_TYPES[sub]?.p || 30; }
-            else if(role === "Specialist") { c.specs++; p = 35; }
-
-            // Add Attachments
-            card.querySelectorAll('.u-att:checked').forEach(a => p += parseInt(a.dataset.p));
-            // Add Veteran skill cost if not None
+            let p = (role === "Character") ? 5 : (role === "Support" && sub === "Main Battle Tank") ? 70 : (role === "Support" && sub === "Light Vehicle") ? 40 : (role === "Specialist") ? 35 : 20;
             if(card.querySelector('.u-vet').value !== "None") p += 5;
-
+            card.querySelectorAll('.u-att:checked').forEach(() => p += 5);
             card.querySelector('.u-pts').value = p;
             total += p;
+            if(role === "Character") c.leaders++;
+            else if(role === "Troops (Squad)") c.troops++;
+            else if(role === "Support") c.support++;
+            else if(role === "Specialist") c.specs++;
         });
-
         document.getElementById('total-pts').innerText = total;
-        
-        // Validation
         const spMax = Math.ceil(c.troops / 2);
         document.getElementById('platoon-val').innerHTML = `
             <div class="val-card ${c.leaders>=1&&c.leaders<=2?'valid':'invalid'}"><span>${c.leaders}/2</span><br><small>Leaders</small></div>
             <div class="val-card ${c.troops>=2&&c.troops<=4?'valid':'invalid'}"><span>${c.troops}/4</span><br><small>Troops</small></div>
             <div class="val-card ${c.support<c.troops&&c.troops>0?'valid':'invalid'}"><span>${c.support}<T</span><br><small>Support</small></div>
-            <div class="val-card ${c.specs<=spMax?'valid':'invalid'}"><span>${c.specs}/${spMax}</span><br><small>Specialists</small></div>
-        `;
+            <div class="val-card ${c.specs<=spMax?'valid':'invalid'}"><span>${c.specs}/${spMax}</span><br><small>Specs</small></div>`;
     }
 
-    function saveData() { updateTotal(); }
+    function exportToText() {
+        let text = `--- PLATOON INTEL BRIEFING ---\nTotal Points: ${document.getElementById('total-pts').innerText} pts\n\n`;
+        document.querySelectorAll('.unit-card').forEach(card => {
+            const name = card.querySelector('.u-name').value || "Unnamed Unit";
+            const role = card.querySelector('.u-role').value;
+            const sub = card.querySelector('.u-sub').value;
+            const pts = card.querySelector('.u-pts').value;
+            const vet = card.querySelector('.u-vet').value;
+            const atts = Array.from(card.querySelectorAll('.u-att:checked')).map(a => a.getAttribute('data-n')).join(', ');
+            
+            text += `[${pts} pts] ${name} (${role}: ${sub})\n`;
+            if(vet !== "None") text += `  > Skill: ${vet}\n`;
+            if(atts) text += `  > Attachments: ${atts}\n`;
+            text += `  > Stats: SPD ${card.querySelector('.u-spd').value} | REA ${card.querySelector('.u-rea').value} | CBT ${card.querySelector('.u-cbt').value} | TOU ${card.querySelector('.u-tou').value} | SAV ${card.querySelector('.u-sav').value}\n`;
+            text += `  > Weapon: ${card.querySelector('.w-n').value} (R:${card.querySelector('.w-r').value} S:${card.querySelector('.w-s').value} D:${card.querySelector('.w-d').value})\n\n`;
+        });
+        navigator.clipboard.writeText(text).then(() => alert("Intel Briefing copied to clipboard!"));
+    }
+
     window.onload = () => addUnit();
 </script>
 </body>
