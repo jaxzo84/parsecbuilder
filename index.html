@@ -3,95 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tactics Terminal - Printer Friendly</title>
+    <title>Tactics Terminal - Command Interface</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root { 
-            --bg: #2b2b2b;          /* Neutral Dark Gray */
-            --panel: #383838;       /* Slightly lighter panel */
-            --border: #555;         /* Subtle border */
-            --text: #e0e0e0;        /* Off-white text */
-            --accent: #a0a0a0;      /* Silver accent */
-            --highlight: #75b0eb;   /* Muted Blue for interaction */
-            --success: #6cc771;
-            --danger: #e06c75;
-            --input-bg: #222;
+            --bg: #222222; 
+            --panel: #333333; 
+            --border: #444444; 
+            --text: #eeeeee; 
+            --text-muted: #aaaaaa;
+            --accent: #888888; 
+            --highlight: #5b9dd9;   /* Neutral Blue for action */
+            --valid: #66bb6a;
+            --error: #ef5350;
         }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
         /* SIDEBAR */
-        .sidebar { width: 320px; background: #222; border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px; overflow-y: auto; }
-        .app-title { font-size: 1.4rem; color: #fff; letter-spacing: 1px; text-transform: uppercase; text-align: center; margin-bottom: 5px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
-        
-        .control-group { margin-bottom: 20px; background: var(--panel); padding: 15px; border-radius: 4px; border: 1px solid var(--border); }
-        .control-label { font-size: 0.75rem; text-transform: uppercase; color: #aaa; font-weight: bold; margin-bottom: 8px; display: block; }
-        
-        select, input[type="text"] { width: 100%; background: var(--input-bg); border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 3px; margin-bottom: 10px; font-size: 0.9rem; box-sizing: border-box; }
-        select:focus, input:focus { border-color: var(--highlight); outline: none; }
-        
-        .btn { width: 100%; padding: 10px; border: none; border-radius: 3px; font-weight: bold; cursor: pointer; margin-top: 5px; text-transform: uppercase; font-size: 0.8rem; transition: 0.2s; }
-        .btn-primary { background: var(--highlight); color: #111; }
-        .btn-primary:hover { filter: brightness(1.1); }
-        .btn-export { background: #fff; color: #000; margin-top: 10px; border: 1px solid #999; }
-        
-        .status-panel { margin-top: auto; border-top: 1px solid var(--border); padding-top: 15px; }
-        .status-item { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 4px; color: #ccc; }
-        .status-val { font-weight: bold; color: #fff; }
-        .status-valid { color: var(--success); }
-        .status-invalid { color: var(--danger); }
+        .sidebar { width: 350px; background: #1a1a1a; border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 15px; overflow-y: auto; box-sizing: border-box; }
+        .app-title { font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; text-align: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; color: #fff; }
 
-        /* MAIN AREA */
+        .control-group { background: var(--panel); padding: 12px; border-radius: 4px; border: 1px solid var(--border); margin-bottom: 15px; }
+        .control-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); font-weight: bold; margin-bottom: 5px; display: block; }
+        
+        input, select { width: 100%; background: #222; border: 1px solid var(--border); color: #fff; padding: 6px; font-size: 0.9rem; box-sizing: border-box; margin-bottom: 8px; }
+        input:focus, select:focus { border-color: var(--highlight); outline: none; }
+
+        .btn { width: 100%; padding: 8px; border: none; border-radius: 3px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; }
+        .btn-primary { background: var(--highlight); color: #fff; }
+        .btn-primary:hover { background: #4a8cc7; }
+        .btn-print { background: #ddd; color: #000; margin-top: 10px; }
+
+        .status-panel { margin-top: auto; border-top: 1px solid var(--border); padding-top: 10px; font-size: 0.85rem; }
+        .status-row { display: flex; justify-content: space-between; margin-bottom: 3px; color: var(--text-muted); }
+        .status-val { font-weight: bold; color: #fff; }
+        .status-msg { margin-top: 10px; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; line-height: 1.4; font-size: 0.8rem; }
+        .valid-text { color: var(--valid); }
+        .error-text { color: var(--error); }
+
+        /* MAIN CONTENT */
         .main-content { flex: 1; padding: 20px; overflow-y: auto; background: var(--bg); }
         
-        .unit-card { 
-            background: var(--panel); border: 1px solid var(--border); border-radius: 4px; 
-            margin-bottom: 15px; position: relative;
-        }
+        .unit-card { background: var(--panel); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         
-        .card-header { 
-            padding: 10px 15px; background: #444; display: flex; justify-content: space-between; align-items: center; 
-            border-bottom: 1px solid var(--border); border-radius: 4px 4px 0 0;
-        }
+        .card-header { padding: 8px 12px; background: #2a2a2a; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         
-        /* Role Indicators (Subtle left border) */
-        .role-Leader { border-left: 4px solid #d4bfff; }
-        .role-Troops { border-left: 4px solid #ffeebb; }
-        .role-Support { border-left: 4px solid #bfeeff; }
-        .role-Specialist { border-left: 4px solid #ffbfbf; }
+        /* Role Strips */
+        .role-Leader { border-left: 4px solid #ba68c8; }
+        .role-Troops { border-left: 4px solid #ffb74d; }
+        .role-Support { border-left: 4px solid #4fc3f7; }
+        .role-Specialist { border-left: 4px solid #e57373; }
 
-        .unit-role-badge { 
-            font-size: 0.7rem; padding: 2px 6px; border-radius: 3px; margin-right: 10px; 
-            background: #222; color: #aaa; border: 1px solid #555;
-        }
+        .role-badge { font-size: 0.65rem; padding: 2px 6px; background: #444; color: #ccc; border-radius: 3px; margin-right: 8px; text-transform: uppercase; }
 
-        .card-body { padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .full-width { grid-column: 1 / -1; }
+        .card-body { padding: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .full-col { grid-column: 1 / -1; }
 
-        /* STATS */
-        .stats-row { display: flex; gap: 0; justify-content: center; background: #222; border: 1px solid var(--border); border-radius: 3px; overflow: hidden; }
-        .stat-box { 
-            width: 50px; text-align: center; border-right: 1px solid var(--border); padding: 5px 0;
-        }
+        /* STATS GRID */
+        .stats-container { display: flex; background: #222; border: 1px solid var(--border); border-radius: 3px; overflow: hidden; }
+        .stat-box { flex: 1; text-align: center; border-right: 1px solid var(--border); padding: 4px 0; }
         .stat-box:last-child { border: none; }
-        .stat-label { font-size: 0.6rem; color: #888; display: block; font-weight: bold; }
-        .stat-val { font-size: 1.1rem; font-weight: bold; color: #fff; }
+        .stat-lbl { font-size: 0.55rem; color: var(--text-muted); display: block; font-weight: bold; text-transform: uppercase; }
+        .stat-val { font-size: 1rem; font-weight: bold; color: #fff; }
 
-        /* CONFIG */
-        .config-title { font-size: 0.75rem; color: #aaa; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
-        .opt-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 0.9rem; }
+        /* CONFIGURATION */
+        .section-title { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border); margin-bottom: 8px; font-weight: bold; }
         
-        /* GEAR GRID */
-        .gear-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 5px; }
-        .gear-item { 
-            background: #333; padding: 5px 8px; border-radius: 3px; font-size: 0.8rem; 
-            display: flex; align-items: center; cursor: pointer; border: 1px solid transparent;
-        }
-        .gear-item:hover { border-color: #666; }
-        .gear-item input { margin-right: 8px; margin-bottom:0; width:auto; }
-        .gear-cost { color: #aaa; margin-left: auto; font-size: 0.75rem; }
+        .opt-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 0.85rem; }
+        .opt-row select { width: 60%; margin: 0; padding: 2px; font-size: 0.8rem; }
+        
+        .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; }
+        .check-item { display: flex; align-items: center; background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 3px; font-size: 0.8rem; cursor: pointer; border: 1px solid transparent; }
+        .check-item:hover { border-color: #555; }
+        .check-item input { width: auto; margin: 0 8px 0 0; }
+        .cost-tag { margin-left: auto; color: var(--accent); font-size: 0.75rem; }
 
-        .del-btn { background: transparent; color: #888; border: none; font-size: 1.2rem; cursor: pointer; }
-        .del-btn:hover { color: var(--danger); }
+        .del-btn { background: transparent; border: none; color: #666; cursor: pointer; font-size: 1.2rem; }
+        .del-btn:hover { color: var(--error); }
     </style>
 </head>
 <body>
@@ -101,391 +89,478 @@
 
     <div class="control-group">
         <label class="control-label">Force Name</label>
-        <input type="text" id="army-name" placeholder="e.g. 7th Colonial Guard">
+        <input type="text" id="army-name" placeholder="e.g. 2nd Colonial Militia">
     </div>
 
     <div class="control-group">
         <label class="control-label">Add Unit</label>
-        <select id="sel-role" onchange="updateUnitTypes()">
+        <select id="sel-role" onchange="updateUnitList()">
             <option value="" disabled selected>1. Select Role...</option>
-            <option value="Leader">Leader</option>
-            <option value="Troops">Troops</option>
-            <option value="Support">Support / Vehicle</option>
-            <option value="Specialist">Specialist</option>
+            <option value="Leader">Leader (1-2)</option>
+            <option value="Troops">Troops (2-4)</option>
+            <option value="Support">Support (0-3)</option>
+            <option value="Specialist">Specialist (1 per 2 Troops)</option>
         </select>
-        <select id="sel-type" disabled>
-            <option>2. Select Type...</option>
+        <select id="sel-unit" disabled>
+            <option>2. Select Unit...</option>
         </select>
-        <button class="btn btn-primary" onclick="addUnit()" id="btn-add" disabled>+ Add Unit</button>
+        <button class="btn btn-primary" id="btn-add" onclick="addUnit()" disabled>+ Add to Platoon</button>
     </div>
 
     <div class="status-panel">
-        <div class="status-item"><span>Total Points:</span> <span id="total-pts" class="status-val" style="font-size:1.2rem;">0</span></div>
-        <div class="status-item"><span>Leaders:</span> <span id="count-leader" class="status-val">0</span></div>
-        <div class="status-item"><span>Troops:</span> <span id="count-troops" class="status-val">0</span></div>
-        <div class="status-item"><span>Support:</span> <span id="count-support" class="status-val">0</span></div>
-        <div class="status-item"><span>Specialists:</span> <span id="count-special" class="status-val">0</span></div>
-        <div id="validation-output" style="margin-top:10px; font-size:0.8rem;"></div>
+        <div class="status-row"><span>Total Points:</span> <span id="val-pts" class="status-val">0</span></div>
+        <div class="status-row"><span>Leaders:</span> <span id="val-lead">0</span></div>
+        <div class="status-row"><span>Troops:</span> <span id="val-troop">0</span></div>
+        <div class="status-row"><span>Support:</span> <span id="val-supp">0</span></div>
+        <div class="status-row"><span>Specialists:</span> <span id="val-spec">0</span></div>
+        
+        <div id="validation-msg" class="status-msg"></div>
     </div>
 
-    <button class="btn btn-export" onclick="generatePDF()">🖨️ Print Data Cards (PDF)</button>
+    <button class="btn btn-print" onclick="generatePDF()">🖨️ Print Data Cards (PDF)</button>
 </div>
 
-<div class="main-content" id="roster-area"></div>
+<div class="main-content" id="roster">
+    </div>
 
 <script>
-    // --- DATA ---
-    
-    const INF_UPGRADES = {
-        "Grenades": 2, "Frag Grenades": 3, "Fog Grenades": 5, "Screen Gen": 10,
-        "Heavy Armor": 10, "Stealth Gear": 5, "Jet Packs": 5, "Bio-Chems": 5, "Blade": 2
-    };
+    // --- DATA REPOSITORY ---
 
-    const VEH_UPGRADES = {
-        "Searchlight": 2, "Smoke Vents": 5, "Reinforced Hull": 10,
-        "Targeter": 5, "Dozer Blade": 5, "Comms Array": 10
+    // Stats: [Speed, Reaction, Combat, Toughness, KP, Savvy, Training]
+    // Veh Stats: [Speed, Toughness, KP, Capacity]
+    
+    const UNITS = {
+        // --- LEADERS ---
+        "Minor Character": { role: "Leader", type: "Infantry", models: 1, base: 15, stats: ['5"','4','+0','4','1','+0','+0'], wpn: "Hand Laser" },
+        "Major Character": { role: "Leader", type: "Infantry", models: 1, base: 35, stats: ['6"','5','+1','4','2','+1','+1'], wpn: "Hand Laser" },
+
+        // --- TROOPS ---
+        "Infantry Squad": { role: "Troops", type: "Infantry", models: 5, base: 27, stats: ['4"','2','+0','3','1','+0','+0'], wpn: "Military Rifle", heavy:1 },
+        "Recon Squad": { role: "Troops", type: "Infantry", models: 5, base: 23, stats: ['5"','3','+0','3','1','+1','+0'], wpn: "Military Rifle" },
+        "Storm Squad": { role: "Troops", type: "Infantry", models: 5, base: 28, stats: ['4"','2','+1','4','1','+0','+1'], wpn: "Shotgun" },
+        "Militia Squad": { role: "Troops", type: "Infantry", models: 5, base: 15, stats: ['4"','1','+0','3','1','+0','+0'], wpn: "Military Rifle", noSgt: true },
+        "Enforcer Squad": { role: "Troops", type: "Infantry", models: 5, base: 15, stats: ['4"','2','+0','3','1','+0','+0'], wpn: "Shotgun" },
+        "Pirate Squad": { role: "Troops", type: "Infantry", models: 5, base: 22, stats: ['4"','2','+1','3','1','+0','+0'], wpn: "Blaster" },
+        "Cavalry Squad": { role: "Troops", type: "Infantry", models: 5, base: 25, stats: ['8"','2','+1','4','1','+0','+0'], wpn: "Military Rifle" },
+
+        // --- SUPPORT (VEHICLES) ---
+        "Nomad Bike": { role: "Support", type: "Vehicle", base: 15, vStats: ['12"', '6', '2', '0'], hardpoints: ["Forward Mount"] },
+        "Scouter Bike": { role: "Support", type: "Vehicle", base: 35, vStats: ['16"', '5', '2', '0'], hardpoints: ["Forward Mount"] },
+        "Lancer Bike": { role: "Support", type: "Vehicle", base: 30, vStats: ['12"', '5', '2', '0'], hardpoints: ["Forward Mount"] },
+        "Frontier Trike": { role: "Support", type: "Vehicle", base: 35, vStats: ['10"', '6', '3', '0'], hardpoints: ["Forward", "Side Mount"] },
+        "Raider Trike": { role: "Support", type: "Vehicle", base: 35, vStats: ['15"', '5', '3', '0'], hardpoints: ["Forward", "Side Mount"] },
+        
+        "Armored Car": { role: "Support", type: "Vehicle", base: 60, vStats: ['9"', '7', '5', '0'], hardpoints: ["Turret"] },
+        "APC (Tracked)": { role: "Support", type: "Vehicle", base: 50, vStats: ['8"', '7', '5', '10'], hardpoints: ["Turret"] },
+        "APC (Grav)": { role: "Support", type: "Vehicle", base: 55, vStats: ['9"', '7', '4', '8'], hardpoints: ["Turret"] },
+        "IFV (Tracked)": { role: "Support", type: "Vehicle", base: 70, vStats: ['8"', '7', '5', '6'], hardpoints: ["Front", "Turret"] },
+        
+        "Light Tank": { role: "Support", type: "Vehicle", base: 100, vStats: ['8"', '8', '6', '0'], hardpoints: ["Front", "Coaxial", "Turret"] },
+        "Medium Tank": { role: "Support", type: "Vehicle", base: 140, vStats: ['7"', '9', '7', '0'], hardpoints: ["Front", "Coaxial", "Turret"] },
+        "Heavy Tank": { role: "Support", type: "Vehicle", base: 200, vStats: ['6"', '10', '8', '0'], hardpoints: ["Front", "Coaxial", "Turret"] },
+        
+        "Light Walker": { role: "Support", type: "Vehicle", base: 70, vStats: ['5"', '8', '4', '0'], hardpoints: ["Arm R", "Arm L"] },
+        "Heavy Walker": { role: "Support", type: "Vehicle", base: 100, vStats: ['4"', '8', '5', '0'], hardpoints: ["Shoulder", "Arm R", "Arm L"] },
+        
+        // --- SUPPORT (TEAMS) ---
+        "Weapon Team": { role: "Support", type: "Team", models: 3, base: 5, stats: ['4"','2','+0','3','1','+0','+0'], wpn: "Pistol", teamWpn: true },
+
+        // --- SPECIALISTS ---
+        "Tech": { role: "Specialist", type: "Specialist", models: 1, base: 5, stats: ['4"','2','+0','3','1','+0','+0'], wpn: "Pistol" },
+        "Sharpshooter": { role: "Specialist", type: "Specialist", models: 1, base: 15, stats: ['4"','3','+0','3','1','+0','+0'], wpn: "Sniper Rifle" },
+        "Medic": { role: "Specialist", type: "Specialist", models: 1, base: 10, stats: ['4"','2','+0','3','1','+0','+0'], wpn: "Pistol" },
+        "Scout": { role: "Specialist", type: "Specialist", models: 1, base: 10, stats: ['5"','2','+0','3','1','+0','+0'], wpn: "Infantry Laser" },
+        "Fire Section": { role: "Specialist", type: "Specialist", models: 2, base: 15, stats: ['4"','2','+0','3','1','+0','+0'], wpn: "Plasma Rifle", heavy: 1 }
     };
 
     const WEAPONS = {
-        "Handgun": { p: 1, type: "Pistol" }, "Blast Pistol": { p: 2, type: "Pistol" },
-        "Military Rifle": { p: 3, type: "Rifle" }, "Infantry Laser": { p: 4, type: "Rifle" },
-        "Shotgun": { p: 2, type: "Rifle" }, "Blaster": { p: 3, type: "Rifle" },
-        "Sniper Rifle": { p: 10, type: "Heavy" }, "Plasma Rifle": { p: 8, type: "Heavy" },
-        "Light MG": { p: 10, type: "Heavy" }, "Grenade Lnch": { p: 10, type: "Heavy" },
-        "Fusion Rifle": { p: 8, type: "Heavy" }, "Flamer": { p: 8, type: "Heavy" },
-        "Heavy MG": { p: 15, type: "Vehicle" }, "Autocannon": { p: 20, type: "Vehicle" },
-        "Heavy Plasma": { p: 20, type: "Vehicle" }, "Laser Cannon": { p: 35, type: "Vehicle" },
-        "Missiles": { p: 30, type: "Vehicle" }, "75mm Cannon": { p: 45, type: "Vehicle" }
+        "Unarmed": 0, "Pistol": 0, "Blade": 0,
+        "Hand Laser": 0, "Blast Pistol": 0, "Military Rifle": 3, "Shotgun": 2, "Blaster": 3, "Infantry Laser": 4, 
+        "Sniper Rifle": 10, "Plasma Rifle": 8, "Fusion Rifle": 8, "Light MG": 10, "Heavy MG": 15, "Flamer": 8,
+        "Grenade Launcher": 10, "Hyper Blaster": 6, "Fury Rifle": 7,
+        "20mm Autocannon": 20, "40mm Autocannon": 25, "75mm Cannon": 45, "100mm Cannon": 55,
+        "Laser Cannon": 35, "Pulse Laser": 35, "Anti-Tank Laser": 0, "Heavy Plasma": 20
+    };
+
+    const SQUAD_UPGRADES = {
+        "Grenades (Frag)": 2, "Grenades (Fog)": 5, "Grenades (Penetrator)": 10,
+        "Infantry Lasers (Swap)": 4, "Blasters (Swap)": 5, "Pistols (Add)": 5,
+        "Breach Armor (x5)": 20, "Powered Armor (x5)": 10
     };
 
     const VET_SKILLS = {
-        "None": 0, "Brave (+10)": 10, "Dead Eye (+10)": 10, "Brawlers (+5)": 5, 
-        "Stealthy (+10)": 10, "Tough (+10)": 10, "Medic (+15)": 15, "Tank Hunters (+15)": 15
+        "None": 0, "Brave (+10)": 10, "Tank Hunters (+15)": 15, "Keen Shots (+10)": 10,
+        "Die-hards (+5)": 5, "Fire Drill (+10)": 10, "Brawlers (+5)": 5, "Fearless (+5)": 5,
+        "Gunnery (Veh) (+15)": 15, "Command (Veh) (+10)": 10, "Driving (Veh) (+10)": 10
     };
 
     const ATTACHMENTS = {
-        "None": 0, "Medic (+10)": 10, "Comms Bot (+8)": 8, "Servitor (+5)": 5, 
-        "Combat Droid (+12)": 12, "Officer (+20)": 20
-    };
-
-    const UNIT_DEFS = {
-        "Leader (Minor)": { role: "Leader", models: 1, base: 15, stats: {S:'5"',R:4,C:3,T:4,Sv:'4+',KP:1}, wpn: "Handgun" },
-        "Leader (Major)": { role: "Leader", models: 1, base: 35, stats: {S:'6"',R:5,C:4,T:4,Sv:'4+',KP:2}, wpn: "Blast Pistol" },
-        "Infantry Squad": { role: "Troops", models: 5, base: 15, stats: {S:'4"',R:3,C:4,T:4,Sv:'5+',KP:1}, wpn: "Military Rifle" },
-        "Storm Squad": { role: "Troops", models: 5, base: 30, stats: {S:'4"',R:3,C:3,T:5,Sv:'4+',KP:1}, wpn: "Blaster" },
-        "Recon Team": { role: "Troops", models: 3, base: 20, stats: {S:'6"',R:4,C:3,T:3,Sv:'6+',KP:1}, wpn: "Shotgun" },
-        "Sniper Team": { role: "Specialist", models: 2, base: 25, stats: {S:'5"',R:4,C:2,T:3,Sv:'5+',KP:1}, wpn: "Sniper Rifle" },
-        "Nomad Bike": { role: "Support", cat: "Vehicle", base: 15, stats: {S:'10"',R:2,C:3,T:5,Sv:'5+',KP:3}, hardpoints: ["Fixed"] },
-        "Light Walker": { role: "Support", cat: "Vehicle", base: 60, stats: {S:'5"',R:3,C:3,T:6,Sv:'5+',KP:4}, hardpoints: ["Arm R", "Arm L"] },
-        "APC": { role: "Support", cat: "Vehicle", base: 50, stats: {S:'8"',R:2,C:1,T:7,Sv:'-',KP:5}, hardpoints: ["Turret"] },
-        "Battle Tank": { role: "Support", cat: "Vehicle", base: 140, stats: {S:'6"',R:2,C:3,T:9,Sv:'-',KP:6}, hardpoints: ["Main", "Hull"] }
+        "None": 0, "Tech (+5)": 5, "Medic (+10)": 10, "Comms (+10)": 10, "Scout (+10)": 10
     };
 
     let roster = [];
 
     // --- LOGIC ---
 
-    function updateUnitTypes() {
+    function updateUnitList() {
         const role = document.getElementById('sel-role').value;
-        const typeSel = document.getElementById('sel-type');
-        typeSel.innerHTML = '<option value="" disabled selected>Select Unit...</option>';
-        typeSel.disabled = false;
+        const list = document.getElementById('sel-unit');
+        list.innerHTML = `<option value="" disabled selected>2. Select Unit...</option>`;
+        list.disabled = false;
         document.getElementById('btn-add').disabled = true;
 
-        Object.keys(UNIT_DEFS).forEach(key => {
-            if (UNIT_DEFS[key].role === role) {
-                typeSel.innerHTML += `<option value="${key}">${key}</option>`;
+        for (let name in UNITS) {
+            if (UNITS[name].role === role) {
+                list.innerHTML += `<option value="${name}">${name} (${UNITS[name].base} pts)</option>`;
             }
-        });
+        }
     }
 
-    document.getElementById('sel-type').addEventListener('change', () => {
+    document.getElementById('sel-unit').addEventListener('change', () => {
         document.getElementById('btn-add').disabled = false;
     });
 
     function addUnit() {
-        const typeName = document.getElementById('sel-type').value;
-        const def = UNIT_DEFS[typeName];
+        const name = document.getElementById('sel-unit').value;
+        const tmpl = UNITS[name];
         
-        const unit = {
+        let unit = {
             id: Date.now(),
-            name: typeName,
-            type: typeName,
-            role: def.role,
-            isVehicle: def.cat === "Vehicle",
-            mainWeapon: def.wpn || "None",
-            vehicleWeapons: {},
-            activeUpgrades: [],
+            name: name,
+            template: name,
+            role: tmpl.role,
+            type: tmpl.type,
+            
+            // Config
+            customName: "",
+            mainWeapon: tmpl.wpn || "Unarmed",
+            specialWeapon: "None",
+            hardpoints: {},
+            upgrades: [],
             veteran: "None",
             attachment: "None"
         };
 
-        if (unit.isVehicle && def.hardpoints) {
-            def.hardpoints.forEach(hp => unit.vehicleWeapons[hp] = "None");
+        // Init Vehicle Hardpoints
+        if (tmpl.type === "Vehicle" && tmpl.hardpoints) {
+            tmpl.hardpoints.forEach(hp => unit.hardpoints[hp] = "None");
+        }
+        
+        // Init Team Weapon
+        if (tmpl.teamWpn) {
+            unit.hardpoints["Main Gun"] = "Laser Cannon"; // Default
         }
 
         roster.push(unit);
-        renderRoster();
+        render();
     }
 
-    function removeUnit(id) {
+    function remove(id) {
         roster = roster.filter(u => u.id !== id);
-        renderRoster();
+        render();
     }
 
-    function toggleUpgrade(id, upgradeName) {
-        const unit = roster.find(u => u.id === id);
-        const idx = unit.activeUpgrades.indexOf(upgradeName);
-        if (idx > -1) unit.activeUpgrades.splice(idx, 1);
-        else unit.activeUpgrades.push(upgradeName);
-        renderRoster();
-    }
+    function calcCost(u) {
+        const tmpl = UNITS[u.template];
+        let cost = tmpl.base;
 
-    function calculateCost(unit) {
-        const def = UNIT_DEFS[unit.type];
-        let cost = def.base;
-
-        if (!unit.isVehicle && def.wpn) {
-            const baseP = WEAPONS[def.wpn] ? WEAPONS[def.wpn].p : 0;
-            const newP = WEAPONS[unit.mainWeapon] ? WEAPONS[unit.mainWeapon].p : 0;
-            cost += (newP - baseP) * def.models;
+        // Infantry Weapon Swaps (Standard logic: If upgrading entire squad)
+        // Note: 5PFH Logic is simpler "Swap X for Y (+Points)". 
+        // We will just add the cost of upgrades selected.
+        
+        u.upgrades.forEach(upg => cost += SQUAD_UPGRADES[upg]);
+        
+        // Special Weapons (Single model swaps)
+        if (u.specialWeapon && u.specialWeapon !== "None") {
+            cost += WEAPONS[u.specialWeapon];
         }
 
-        if (unit.isVehicle) {
-            Object.values(unit.vehicleWeapons).forEach(w => {
-                if(WEAPONS[w]) cost += WEAPONS[w].p;
-            });
+        // Vehicle / Team Weapons
+        for (let hp in u.hardpoints) {
+            let wpn = u.hardpoints[hp];
+            if (wpn !== "None" && WEAPONS[wpn]) cost += WEAPONS[wpn];
         }
 
-        unit.activeUpgrades.forEach(upg => {
-            if (unit.isVehicle) {
-                if (VEH_UPGRADES[upg]) cost += VEH_UPGRADES[upg];
-            } else {
-                if (INF_UPGRADES[upg]) cost += (INF_UPGRADES[upg] * def.models);
-            }
-        });
+        // Skills & Attachments
+        if (VET_SKILLS[u.veteran]) cost += VET_SKILLS[u.veteran];
+        if (ATTACHMENTS[u.attachment]) cost += ATTACHMENTS[u.attachment];
 
-        if (VET_SKILLS[unit.veteran]) cost += VET_SKILLS[unit.veteran];
-        if (ATTACHMENTS[unit.attachment]) cost += ATTACHMENTS[unit.attachment];
+        // Leader Upgrades (Manual logic: Hero +5)
+        if (u.upgrades.includes("Hero (+5)")) cost += 5;
+        if (u.upgrades.includes("Leader Ability (+10)")) cost += 10;
 
         return cost;
     }
 
-    function renderRoster() {
-        const area = document.getElementById('roster-area');
-        area.innerHTML = '';
+    function render() {
+        const container = document.getElementById('roster');
+        container.innerHTML = "";
         
-        let armyTotal = 0;
-        let counts = { Leader:0, Troops:0, Support:0, Specialist:0 };
+        let stats = { pts:0, lead:0, troop:0, supp:0, spec:0 };
 
-        roster.forEach(unit => {
-            const def = UNIT_DEFS[unit.type];
-            const cost = calculateCost(unit);
-            armyTotal += cost;
-            counts[unit.role]++;
+        roster.forEach(u => {
+            const tmpl = UNITS[u.template];
+            const cost = calcCost(u);
+            stats.pts += cost;
+            if (u.role === "Leader") stats.lead++;
+            if (u.role === "Troops") stats.troop++;
+            if (u.role === "Support") stats.supp++;
+            if (u.role === "Specialist") stats.spec++;
 
-            const card = document.createElement('div');
-            card.className = `unit-card role-${unit.role}`;
-            
-            const statsHTML = Object.keys(def.stats).map(k => `
-                <div class="stat-box"><span class="stat-label">${k}</span><div class="stat-val">${def.stats[k]}</div></div>
-            `).join('');
+            const div = document.createElement('div');
+            div.className = `unit-card role-${u.role}`;
 
-            const upgrades = unit.isVehicle ? VEH_UPGRADES : INF_UPGRADES;
-            const upgradesHTML = Object.entries(upgrades).map(([name, pts]) => {
-                const isChecked = unit.activeUpgrades.includes(name) ? 'checked' : '';
-                return `
-                <label class="gear-item">
-                    <input type="checkbox" ${isChecked} onchange="toggleUpgrade(${unit.id}, '${name}')">
-                    ${name} <span class="gear-cost">+${pts}</span>
-                </label>`;
-            }).join('');
-
-            let weaponHTML = unit.isVehicle 
-                ? Object.keys(unit.vehicleWeapons).map(slot => `
-                    <div class="opt-row">
-                        <span>${slot}</span>
-                        <select onchange="updateUnitVal(${unit.id}, 'vehWpn', '${slot}', this.value)">
-                            <option value="None">Empty</option>
-                            ${Object.keys(WEAPONS).filter(k => WEAPONS[k].type === "Vehicle" || WEAPONS[k].type === "Heavy").map(w => 
-                                `<option value="${w}" ${unit.vehicleWeapons[slot] === w ? 'selected' : ''}>${w} (${WEAPONS[w].p})</option>`
-                            ).join('')}
-                        </select>
-                    </div>`).join('')
-                : `
-                <div class="opt-row">
-                    <span>Main Weapon</span>
-                    <select onchange="updateUnitVal(${unit.id}, 'mainWpn', null, this.value)">
-                        ${Object.keys(WEAPONS).filter(k => WEAPONS[k].type === WEAPONS[def.wpn].type).map(w => 
-                            `<option value="${w}" ${unit.mainWeapon === w ? 'selected' : ''}>${w}</option>`
-                        ).join('')}
-                    </select>
+            // --- HEADER ---
+            let header = `
+                <div class="card-header">
+                    <div style="display:flex; align-items:center; width:100%;">
+                        <span class="role-badge">${u.role}</span>
+                        <input type="text" value="${u.customName}" placeholder="${u.name}" 
+                            style="background:transparent; border:none; font-weight:bold; color:white; margin:0; width:180px;"
+                            onchange="update(this, ${u.id}, 'customName')">
+                    </div>
+                    <div style="font-weight:bold; color:#fff; white-space:nowrap;">${cost} PTS</div>
+                    <button class="del-btn" onclick="remove(${u.id})" style="margin-left:10px;">&times;</button>
                 </div>`;
 
-            card.innerHTML = `
-                <div class="card-header">
-                    <div style="display:flex; align-items:center;">
-                        <span class="unit-role-badge">${unit.role}</span>
-                        <input type="text" value="${unit.name}" 
-                               style="width:200px; border:none; background:transparent; font-weight:bold; color:white; margin:0;"
-                               onchange="updateUnitVal(${unit.id}, 'name', null, this.value)">
-                    </div>
-                    <div style="font-weight:bold; color:#fff;">${cost} pts</div>
-                    <button class="del-btn" onclick="removeUnit(${unit.id})">×</button>
-                </div>
-                
-                <div class="card-body">
-                    <div class="full-width stats-row">${statsHTML}</div>
-                    
-                    <div>
-                        <div class="config-title">Armament</div>
-                        ${weaponHTML}
-                    </div>
+            // --- STATS ---
+            let statHTML = "";
+            if (tmpl.type === "Vehicle") {
+                statHTML = `
+                <div class="stats-container">
+                    <div class="stat-box"><span class="stat-lbl">SPD</span><span class="stat-val">${tmpl.vStats[0]}</span></div>
+                    <div class="stat-box"><span class="stat-lbl">TOU</span><span class="stat-val">${tmpl.vStats[1]}</span></div>
+                    <div class="stat-box"><span class="stat-lbl">KP</span><span class="stat-val">${tmpl.vStats[2]}</span></div>
+                    <div class="stat-box"><span class="stat-lbl">CAP</span><span class="stat-val">${tmpl.vStats[3]}</span></div>
+                </div>`;
+            } else {
+                statHTML = `
+                <div class="stats-container">
+                    <div class="stat-box"><span class="stat-lbl">SPD</span><span class="stat-val">${tmpl.stats[0]}</span></div>
+                    <div class="stat-box"><span class="stat-lbl">REA</span><span class="stat-val">${tmpl.stats[1]}</span></div>
+                    <div class="stat-box"><span class="stat-lbl">COM</span><span class="stat-val">${tmpl.stats[2]}</span></div>
+                    <div class="stat-box"><span class="stat-lbl">TOU</span><span class="stat-val">${tmpl.stats[3]}</span></div>
+                    <div class="stat-box"><span class="stat-lbl">KP</span><span class="stat-val">${tmpl.stats[4]}</span></div>
+                    <div class="stat-box"><span class="stat-lbl">SAV</span><span class="stat-val">${tmpl.stats[5]}</span></div>
+                    <div class="stat-box"><span class="stat-lbl">TRN</span><span class="stat-val">${tmpl.stats[6]}</span></div>
+                </div>`;
+            }
 
-                    <div>
-                        <div class="config-title">Training</div>
-                        <div class="opt-row">
-                            <span>Veteran Skill</span>
-                            <select onchange="updateUnitVal(${unit.id}, 'vet', null, this.value)">
-                                ${Object.keys(VET_SKILLS).map(s => `<option ${unit.veteran === s ? 'selected' : ''}>${s}</option>`).join('')}
-                            </select>
-                        </div>
-                        ${!unit.isVehicle ? `
-                        <div class="opt-row">
-                            <span>Attachment</span>
-                            <select onchange="updateUnitVal(${unit.id}, 'att', null, this.value)">
-                                ${Object.keys(ATTACHMENTS).map(a => `<option ${unit.attachment === a ? 'selected' : ''}>${a}</option>`).join('')}
-                            </select>
-                        </div>` : ''}
-                    </div>
+            // --- CONFIG ---
+            let configHTML = "";
+            
+            // 1. Weapons (Hardpoints for Vehicles, Special for Inf)
+            if (tmpl.type === "Vehicle") {
+                for (let hp in u.hardpoints) {
+                    configHTML += `
+                    <div class="opt-row">
+                        <span>${hp}</span>
+                        <select onchange="update(this, ${u.id}, 'hp', '${hp}')">
+                            <option value="None">Empty</option>
+                            ${Object.keys(WEAPONS).filter(k => WEAPONS[k] > 0).map(w => 
+                                `<option value="${w}" ${u.hardpoints[hp]===w?'selected':''}>${w} (+${WEAPONS[w]})</option>`).join('')}
+                        </select>
+                    </div>`;
+                }
+            } else if (tmpl.role === "Troops" && !tmpl.noSgt) {
+                // Infantry Special Weapon Slot
+                configHTML += `
+                <div class="opt-row">
+                    <span>Specialist Weapon</span>
+                    <select onchange="update(this, ${u.id}, 'specWpn')">
+                        <option value="None">None</option>
+                        ${Object.keys(WEAPONS).filter(k => WEAPONS[k] > 5).map(w => 
+                            `<option value="${w}" ${u.specialWeapon===w?'selected':''}>${w} (+${WEAPONS[w]})</option>`).join('')}
+                    </select>
+                </div>`;
+            } else if (tmpl.teamWpn) {
+                configHTML += `
+                <div class="opt-row">
+                    <span>Heavy Weapon</span>
+                    <select onchange="update(this, ${u.id}, 'hp', 'Main Gun')">
+                        <option value="Laser Cannon" ${u.hardpoints['Main Gun']==="Laser Cannon"?'selected':''}>Laser Cannon (35)</option>
+                        <option value="20mm Autocannon" ${u.hardpoints['Main Gun']==="20mm Autocannon"?'selected':''}>20mm Autocannon (20)</option>
+                        <option value="Infantry Mortar" ${u.hardpoints['Main Gun']==="Infantry Mortar"?'selected':''}>Infantry Mortar (15)</option>
+                    </select>
+                </div>`;
+            }
 
-                    <div class="full-width">
-                        <div class="config-title">Upgrades</div>
-                        <div class="gear-grid">${upgradesHTML}</div>
-                    </div>
-                </div>
-            `;
-            area.appendChild(card);
+            // 2. Upgrades (Checkbox Grid)
+            let availUpgrades = [];
+            if (u.role === "Leader") availUpgrades = ["Hero (+5)", "Leader Ability (+10)"];
+            else if (u.role === "Troops") availUpgrades = Object.keys(SQUAD_UPGRADES);
+
+            if (availUpgrades.length > 0) {
+                configHTML += `<div class="section-title" style="margin-top:10px;">Squad Upgrades</div><div class="checkbox-grid">`;
+                availUpgrades.forEach(upg => {
+                    let cost = upg.match(/\d+/) ? "" : ""; // Cost is in name
+                    let checked = u.upgrades.includes(upg) ? "checked" : "";
+                    configHTML += `
+                    <label class="check-item">
+                        <input type="checkbox" ${checked} onchange="update(this, ${u.id}, 'upgrade', '${upg}')">
+                        ${upg}
+                    </label>`;
+                });
+                configHTML += `</div>`;
+            }
+
+            // 3. Vet & Attachments
+            configHTML += `<div class="section-title" style="margin-top:10px;">Training & Support</div>`;
+            
+            configHTML += `
+            <div class="opt-row">
+                <span>Veteran Skill</span>
+                <select onchange="update(this, ${u.id}, 'vet')">
+                    ${Object.keys(VET_SKILLS).map(k => `<option ${u.veteran===k?'selected':''}>${k}</option>`).join('')}
+                </select>
+            </div>`;
+            
+            if (tmpl.type === "Infantry") {
+                configHTML += `
+                <div class="opt-row">
+                    <span>Attachment</span>
+                    <select onchange="update(this, ${u.id}, 'att')">
+                        ${Object.keys(ATTACHMENTS).map(k => `<option ${u.attachment===k?'selected':''}>${k}</option>`).join('')}
+                    </select>
+                </div>`;
+            }
+
+            div.innerHTML = header + `<div class="card-body"><div class="full-col">${statHTML}</div><div class="full-col">${configHTML}</div></div>`;
+            container.appendChild(div);
         });
 
-        document.getElementById('total-pts').innerText = armyTotal;
-        Object.keys(counts).forEach(k => document.getElementById(`count-${k.toLowerCase()}`).innerText = counts[k]);
-        
-        const validBox = document.getElementById('validation-output');
-        let errs = [];
-        if (counts.Leader < 1) errs.push("• Need at least 1 Leader");
-        if (counts.Troops < 2) errs.push("• Need at least 2 Troops");
-        if (counts.Support >= counts.Troops && counts.Troops > 0) errs.push("• Support must be less than Troops");
-        validBox.innerHTML = errs.length ? `<span class="status-invalid">${errs.join('<br>')}</span>` : `<span class="status-valid">✓ Legal Force</span>`;
+        // UPDATE STATUS
+        document.getElementById('val-pts').innerText = stats.pts;
+        document.getElementById('val-lead').innerText = stats.lead;
+        document.getElementById('val-troop').innerText = stats.troop;
+        document.getElementById('val-supp').innerText = stats.supp;
+        document.getElementById('val-spec').innerText = stats.spec;
+
+        validate(stats);
     }
 
-    function updateUnitVal(id, field, key, val) {
-        const unit = roster.find(u => u.id === id);
-        if (!unit) return;
-        if (field === 'vehWpn') unit.vehicleWeapons[key] = val;
-        if (field === 'mainWpn') unit.mainWeapon = val;
-        if (field === 'vet') unit.veteran = val;
-        if (field === 'att') unit.attachment = val;
-        if (field === 'name') unit.name = val;
-        renderRoster();
+    function update(el, id, type, key) {
+        let u = roster.find(x => x.id === id);
+        if (!u) return;
+
+        if (type === 'customName') u.customName = el.value;
+        if (type === 'vet') u.veteran = el.value;
+        if (type === 'att') u.attachment = el.value;
+        if (type === 'specWpn') u.specialWeapon = el.value;
+        if (type === 'hp') u.hardpoints[key] = el.value;
+        if (type === 'upgrade') {
+            if (el.checked) u.upgrades.push(key);
+            else u.upgrades = u.upgrades.filter(x => x !== key);
+        }
+        render();
     }
 
-    // --- PDF GENERATION (PRINTER FRIENDLY) ---
+    function validate(s) {
+        let msg = [];
+        if (s.lead < 1 || s.lead > 2) msg.push("• Leaders: Must have 1-2.");
+        if (s.troop < 2 || s.troop > 4) msg.push("• Troops: Must have 2-4.");
+        if (s.troop > 0 && s.supp >= s.troop) msg.push("• Support: Must be fewer than Troops.");
+        if (s.spec > Math.floor(s.troop / 2)) msg.push("• Specialists: Max 1 per 2 Troops.");
+
+        const box = document.getElementById('validation-msg');
+        if (msg.length === 0) {
+            box.innerHTML = "Platoon Structure Valid ✓";
+            box.className = "status-msg valid-text";
+        } else {
+            box.innerHTML = msg.join("<br>");
+            box.className = "status-msg error-text";
+        }
+    }
+
+    // --- PDF GENERATION ---
     function generatePDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        const armyName = document.getElementById('army-name').value || "TACTICAL FORCE";
-        
-        // White Background (Printer Friendly)
-        doc.setFillColor(255, 255, 255); 
-        doc.rect(0, 0, 210, 297, 'F');
+        const armyName = document.getElementById('army-name').value || "TACTICAL PLATOON";
+
+        // White background for printing
+        doc.setFillColor(255, 255, 255); doc.rect(0, 0, 210, 297, 'F');
         
         // Header
-        doc.setTextColor(0, 0, 0); 
-        doc.setFontSize(22); doc.setFont(undefined, 'bold');
+        doc.setTextColor(0); doc.setFontSize(22); doc.setFont(undefined, 'bold');
         doc.text(armyName.toUpperCase(), 105, 20, null, null, 'center');
-        
         doc.setFontSize(12); doc.setFont(undefined, 'normal');
-        doc.text(`TOTAL POINTS: ${document.getElementById('total-pts').innerText}`, 105, 28, null, null, 'center');
-        
-        doc.setLineWidth(0.5);
-        doc.line(20, 32, 190, 32);
+        doc.text(`TOTAL POINTS: ${document.getElementById('val-pts').innerText}`, 105, 27, null, null, 'center');
 
-        let y = 40;
-        
-        roster.forEach(unit => {
-            // Check Page break
-            if (y > 230) { 
-                doc.addPage(); 
-                doc.setFillColor(255, 255, 255); doc.rect(0, 0, 210, 297, 'F'); 
-                y = 20; 
-            }
+        let y = 35;
+
+        roster.forEach(u => {
+            if (y > 240) { doc.addPage(); y = 20; }
             
-            const def = UNIT_DEFS[unit.type];
-            
-            // CARD CONTAINER (Rounded Rect, Black Border)
-            doc.setDrawColor(0); 
-            doc.setFillColor(255, 255, 255);
-            doc.roundedRect(20, y, 170, 50, 1, 1, 'S');
+            const tmpl = UNITS[u.template];
+            const cost = calcCost(u);
 
-            // HEADER STRIP (Light Gray for contrast)
-            doc.setFillColor(230, 230, 230);
-            doc.rect(20, y, 170, 8, 'F');
-            doc.rect(20, y, 170, 8, 'S');
+            // Card Border (Rounded, Black)
+            doc.setDrawColor(0); doc.setLineWidth(0.5);
+            doc.roundedRect(20, y, 170, 50, 2, 2, 'S');
 
-            // UNIT NAME & POINTS
-            doc.setTextColor(0, 0, 0); doc.setFontSize(11); doc.setFont(undefined, 'bold');
-            doc.text(`${unit.name.toUpperCase()} [${unit.role}]`, 25, y+5.5);
-            doc.text(`${calculateCost(unit)} PTS`, 185, y+5.5, null, null, 'right');
+            // Header Strip (Grey)
+            doc.setFillColor(220); 
+            doc.roundedRect(20, y, 170, 10, 2, 2, 'F');
+            doc.rect(20, y+8, 170, 2, 'F'); // Square off bottom corners of header
 
-            // STATS BOXES
+            // Name & Role
+            doc.setFontSize(11); doc.setFont(undefined, 'bold');
+            let dName = u.customName ? `${u.customName} (${u.name})` : u.name;
+            doc.text(`${dName.toUpperCase()} [${u.role}]`, 25, y+7);
+            doc.text(`${cost} PTS`, 185, y+7, null, null, 'right');
+
+            // Stats Boxes
             doc.setFontSize(8); doc.setFont(undefined, 'normal');
             let x = 25;
             
-            Object.entries(def.stats).forEach(([k, v]) => {
-                // Box
-                doc.rect(x, y+12, 12, 12, 'S');
-                // Label (Top)
-                doc.setFontSize(6); 
-                doc.text(k, x+6, y+15, null, null, 'center');
-                // Value (Center)
-                doc.setFontSize(10); doc.setFont(undefined, 'bold');
-                doc.text(String(v), x+6, y+21, null, null, 'center');
-                
-                x += 14;
-            });
-
-            // INFO TEXT
-            doc.setFontSize(9); doc.setFont(undefined, 'normal');
-            
-            // Weapons
-            let wpnStr = unit.isVehicle 
-                ? Object.values(unit.vehicleWeapons).filter(w=>w!=='None').join(', ')
-                : `Main: ${unit.mainWeapon}`;
-            
-            // Gear / Skills
-            let gearStr = unit.activeUpgrades.join(', ');
-            let skillStr = [];
-            if(unit.veteran !== "None") skillStr.push(`Vet: ${unit.veteran.split(' (+')[0]}`);
-            if(unit.attachment !== "None") skillStr.push(`Att: ${unit.attachment.split(' (+')[0]}`);
-
-            doc.text(`WEAPONS:`, 25, y+32);
-            doc.setFont(undefined, 'bold');
-            doc.text(wpnStr || "None", 45, y+32);
-            doc.setFont(undefined, 'normal');
-
-            doc.text(`GEAR:`, 25, y+38);
-            doc.text(gearStr || "-", 45, y+38);
-
-            if (skillStr.length > 0) {
-                doc.text(`NOTES:`, 25, y+44);
-                doc.text(skillStr.join(' | '), 45, y+44);
+            if (tmpl.type === "Vehicle") {
+                // Vehicle Stats (4 boxes)
+                const labels = ["SPD", "TOU", "KP", "CAP"];
+                const vals = tmpl.vStats;
+                labels.forEach((lbl, i) => {
+                    doc.rect(x, y+13, 12, 12);
+                    doc.setFontSize(6); doc.text(lbl, x+6, y+16, null, null, 'center');
+                    doc.setFontSize(10); doc.setFont(undefined, 'bold'); doc.text(vals[i], x+6, y+22, null, null, 'center');
+                    x += 14;
+                });
+            } else {
+                // Infantry Stats (7 boxes)
+                const labels = ["SPD", "REA", "CBT", "TOU", "KP", "SAV", "TRN"];
+                const vals = tmpl.stats;
+                labels.forEach((lbl, i) => {
+                    doc.rect(x, y+13, 12, 12);
+                    doc.setFontSize(6); doc.text(lbl, x+6, y+16, null, null, 'center');
+                    doc.setFontSize(10); doc.setFont(undefined, 'bold'); doc.text(vals[i], x+6, y+22, null, null, 'center');
+                    x += 14;
+                });
             }
 
-            y += 56; // Spacing to next card
+            // Info Text
+            doc.setFontSize(9); doc.setFont(undefined, 'normal');
+            let wpnTxt = "";
+            if (tmpl.type === "Vehicle" || tmpl.teamWpn) {
+                for (let hp in u.hardpoints) {
+                    if (u.hardpoints[hp] !== "None") wpnTxt += `${hp}: ${u.hardpoints[hp]} | `;
+                }
+            } else {
+                wpnTxt = `Main: ${tmpl.wpn}`;
+                if (u.specialWeapon && u.specialWeapon !== "None") wpnTxt += ` | Spec: ${u.specialWeapon}`;
+            }
+
+            let gearTxt = u.upgrades.join(", ");
+            let notes = [];
+            if (u.veteran !== "None") notes.push(`Vet: ${u.veteran}`);
+            if (u.attachment !== "None") notes.push(`Att: ${u.attachment}`);
+
+            doc.text(`GEAR: ${wpnTxt}`, 25, y+32);
+            if (gearTxt) doc.text(`UPGRADES: ${gearTxt}`, 25, y+38);
+            if (notes.length) doc.text(`NOTES: ${notes.join(" | ")}`, 25, y+44);
+
+            y += 55;
         });
 
-        doc.save(`${armyName.replace(/\s/g,'_')}.pdf`);
+        doc.save(armyName.replace(/ /g, "_") + ".pdf");
     }
 </script>
 </body>
