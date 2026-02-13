@@ -1,567 +1,1362 @@
 <!DOCTYPE html>
-<html lang="sv">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tactics Terminal - Command Interface</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <title>Five Parsecs from Home: Tactics - Army Builder</title>
     <style>
-        :root { 
-            --bg: #222222; 
-            --panel: #333333; 
-            --border: #444444; 
-            --text: #eeeeee; 
-            --text-muted: #aaaaaa;
-            --accent: #888888; 
-            --highlight: #5b9dd9;   /* Neutral Blue for action */
-            --valid: #66bb6a;
-            --error: #ef5350;
+        @media print {
+            body > *:not(.print-area) { display: none !important; }
+            .print-area { display: block !important; }
+            .stat-card { page-break-inside: avoid; page-break-after: always; }
         }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        
-        /* SIDEBAR */
-        .sidebar { width: 350px; background: #1a1a1a; border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 15px; overflow-y: auto; box-sizing: border-box; }
-        .app-title { font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; text-align: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; color: #fff; }
-
-        .control-group { background: var(--panel); padding: 12px; border-radius: 4px; border: 1px solid var(--border); margin-bottom: 15px; }
-        .control-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); font-weight: bold; margin-bottom: 5px; display: block; }
-        
-        input, select { width: 100%; background: #222; border: 1px solid var(--border); color: #fff; padding: 6px; font-size: 0.9rem; box-sizing: border-box; margin-bottom: 8px; }
-        input:focus, select:focus { border-color: var(--highlight); outline: none; }
-
-        .btn { width: 100%; padding: 8px; border: none; border-radius: 3px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; }
-        .btn-primary { background: var(--highlight); color: #fff; }
-        .btn-primary:hover { background: #4a8cc7; }
-        .btn-print { background: #ddd; color: #000; margin-top: 10px; }
-
-        .status-panel { margin-top: auto; border-top: 1px solid var(--border); padding-top: 10px; font-size: 0.85rem; }
-        .status-row { display: flex; justify-content: space-between; margin-bottom: 3px; color: var(--text-muted); }
-        .status-val { font-weight: bold; color: #fff; }
-        .status-msg { margin-top: 10px; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; line-height: 1.4; font-size: 0.8rem; }
-        .valid-text { color: var(--valid); }
-        .error-text { color: var(--error); }
-
-        /* MAIN CONTENT */
-        .main-content { flex: 1; padding: 20px; overflow-y: auto; background: var(--bg); }
-        
-        .unit-card { background: var(--panel); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        
-        .card-header { padding: 8px 12px; background: #2a2a2a; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        
-        /* Role Strips */
-        .role-Leader { border-left: 4px solid #ba68c8; }
-        .role-Troops { border-left: 4px solid #ffb74d; }
-        .role-Support { border-left: 4px solid #4fc3f7; }
-        .role-Specialist { border-left: 4px solid #e57373; }
-
-        .role-badge { font-size: 0.65rem; padding: 2px 6px; background: #444; color: #ccc; border-radius: 3px; margin-right: 8px; text-transform: uppercase; }
-
-        .card-body { padding: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .full-col { grid-column: 1 / -1; }
-
-        /* STATS GRID */
-        .stats-container { display: flex; background: #222; border: 1px solid var(--border); border-radius: 3px; overflow: hidden; }
-        .stat-box { flex: 1; text-align: center; border-right: 1px solid var(--border); padding: 4px 0; }
-        .stat-box:last-child { border: none; }
-        .stat-lbl { font-size: 0.55rem; color: var(--text-muted); display: block; font-weight: bold; text-transform: uppercase; }
-        .stat-val { font-size: 1rem; font-weight: bold; color: #fff; }
-
-        /* CONFIGURATION */
-        .section-title { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border); margin-bottom: 8px; font-weight: bold; }
-        
-        .opt-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 0.85rem; }
-        .opt-row select { width: 60%; margin: 0; padding: 2px; font-size: 0.8rem; }
-        
-        .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; }
-        .check-item { display: flex; align-items: center; background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 3px; font-size: 0.8rem; cursor: pointer; border: 1px solid transparent; }
-        .check-item:hover { border-color: #555; }
-        .check-item input { width: auto; margin: 0 8px 0 0; }
-        .cost-tag { margin-left: auto; color: var(--accent); font-size: 0.75rem; }
-
-        .del-btn { background: transparent; border: none; color: #666; cursor: pointer; font-size: 1.2rem; }
-        .del-btn:hover { color: var(--error); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #e4e4e4; padding: 20px; min-height: 100vh; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; padding: 30px; background: linear-gradient(135deg, #c73e1d 0%, #a02c15 100%); border-radius: 12px; box-shadow: 0 8px 32px rgba(199, 62, 29, 0.3); }
+        h1 { font-size: 2.5em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .subtitle { font-size: 1.2em; opacity: 0.9; }
+        .army-name-section { background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
+        .army-name-input { font-size: 1.5em; text-align: center; padding: 15px; background: rgba(255, 255, 255, 0.15); border: 2px solid #c73e1d; border-radius: 8px; color: #fff; width: 100%; max-width: 600px; }
+        .army-name-input::placeholder { color: rgba(255, 255, 255, 0.5); }
+        .points-display { background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 8px; margin-bottom: 30px; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px; }
+        .points-item { text-align: center; }
+        .points-label { font-size: 0.9em; opacity: 0.7; margin-bottom: 5px; }
+        .points-value { font-size: 2em; font-weight: bold; color: #c73e1d; }
+        .validation-status { padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; text-align: center; }
+        .validation-status.valid { background: rgba(76, 175, 80, 0.3); border: 2px solid #4caf50; color: #4caf50; }
+        .validation-status.invalid { background: rgba(244, 67, 54, 0.3); border: 2px solid #f44336; color: #f44336; }
+        .validation-messages { margin-top: 10px; font-size: 0.9em; opacity: 0.9; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+        .tab { padding: 12px 24px; background: rgba(255, 255, 255, 0.1); border: none; border-radius: 8px; color: #e4e4e4; cursor: pointer; font-size: 1em; transition: all 0.3s; }
+        .tab:hover { background: rgba(255, 255, 255, 0.2); }
+        .tab.active { background: #c73e1d; box-shadow: 0 4px 12px rgba(199, 62, 29, 0.4); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .section { background: rgba(255, 255, 255, 0.05); padding: 25px; border-radius: 12px; margin-bottom: 25px; border: 1px solid rgba(199, 62, 29, 0.3); }
+        .section-title { font-size: 1.5em; margin-bottom: 20px; color: #c73e1d; border-bottom: 2px solid #c73e1d; padding-bottom: 10px; }
+        .unit-selector { background: #d0d0d0; color: #000; padding: 15px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; border: 2px solid transparent; transition: all 0.3s; }
+        .unit-selector:hover { border-color: #c73e1d; background: #e0e0e0; }
+        .unit-selector.selected { border-color: #c73e1d; background: #f5f5f5; box-shadow: 0 0 0 3px rgba(199, 62, 29, 0.2); }
+        .unit-selector-name { font-size: 1.2em; font-weight: bold; color: #c73e1d; margin-bottom: 8px; }
+        .unit-selector-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; margin: 10px 0; }
+        .unit-selector-stat { background: rgba(0, 0, 0, 0.1); padding: 5px 8px; border-radius: 4px; font-size: 0.9em; }
+        .unit-selector-stat-label { font-weight: 600; color: #666; }
+        .unit-selector-stat-value { color: #c73e1d; font-weight: bold; }
+        .unit-selector-cost { font-size: 1.1em; font-weight: bold; color: #c73e1d; margin-top: 8px; }
+        .unit-selector-notes { font-size: 0.85em; margin-top: 8px; color: #444; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 8px; font-weight: 500; color: #c73e1d; }
+        input, select, textarea { width: 100%; padding: 10px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(199, 62, 29, 0.3); border-radius: 6px; color: #e4e4e4; font-size: 1em; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #c73e1d; box-shadow: 0 0 0 3px rgba(199, 62, 29, 0.2); }
+        button { padding: 12px 24px; background: #c73e1d; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1em; transition: all 0.3s; font-weight: 600; }
+        button:hover { background: #a02c15; box-shadow: 0 4px 12px rgba(199, 62, 29, 0.4); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-secondary { background: rgba(255, 255, 255, 0.4); color: #000; font-weight: 600; }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.5); }
+        .btn-danger { background: #d32f2f; }
+        .btn-danger:hover { background: #b71c1c; }
+        .btn-small { padding: 6px 12px; font-size: 0.9em; }
+        .army-list { display: flex; flex-direction: column; gap: 15px; }
+        .army-unit { background: #d0d0d0; color: #000; padding: 20px; border-radius: 8px; border-left: 4px solid #c73e1d; }
+        .army-unit-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(0, 0, 0, 0.1); }
+        .army-unit-name { font-weight: bold; font-size: 1.3em; color: #c73e1d; }
+        .army-unit-cost { font-size: 1.2em; font-weight: bold; background: #c73e1d; color: white; padding: 8px 16px; border-radius: 5px; }
+        .army-unit-details { background: rgba(255, 255, 255, 0.5); padding: 15px; border-radius: 6px; margin: 10px 0; color: #000; }
+        .army-unit-section { margin: 10px 0; }
+        .army-unit-section-title { font-weight: bold; color: #c73e1d; margin-bottom: 5px; }
+        .army-unit-actions { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        .option-group { background: rgba(255, 255, 255, 0.08); padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .option-title { font-weight: bold; color: #c73e1d; margin-bottom: 10px; font-size: 1.1em; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(199, 62, 29, 0.2); border-radius: 6px; }
+        .option-title:hover { background: rgba(199, 62, 29, 0.3); }
+        .option-title::after { content: '▼'; font-size: 0.8em; transition: transform 0.3s; }
+        .option-title.collapsed::after { transform: rotate(-90deg); }
+        .option-content { max-height: 2000px; overflow: hidden; transition: max-height 0.3s ease-out; }
+        .option-content.collapsed { max-height: 0; }
+        .checkbox-option { background: #d0d0d0; color: #000; padding: 12px; margin: 8px 0; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: all 0.3s; display: flex; justify-content: space-between; align-items: center; }
+        .checkbox-option:hover { border-color: #c73e1d; background: #e0e0e0; }
+        .checkbox-option.selected { background: #f5f5f5; border-color: #c73e1d; }
+        .checkbox-option-name { font-weight: 600; }
+        .checkbox-option-cost { color: #c73e1d; font-weight: bold; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); overflow: auto; }
+        .modal-content { background: #16213e; margin: 3% auto; padding: 30px; border-radius: 12px; width: 90%; max-width: 1000px; max-height: 85vh; overflow-y: auto; border: 2px solid #c73e1d; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: #c73e1d; }
+        .notification { position: fixed; top: 20px; right: 20px; background: #c73e1d; color: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); display: none; z-index: 1001; }
+        .notification.show { display: block; animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .step-indicator { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .step-indicator-title { font-size: 1.2em; color: #c73e1d; font-weight: bold; margin-bottom: 10px; }
+        .stat-card { background: white; color: #000; padding: 20px; margin: 20px; border: 3px solid #c73e1d; border-radius: 8px; width: 750px; page-break-inside: avoid; }
+        .stat-card-header { background: #c73e1d; color: white; padding: 15px; margin: -20px -20px 20px -20px; border-radius: 5px 5px 0 0; }
+        .stat-card-title { font-size: 1.8em; font-weight: bold; margin-bottom: 5px; }
+        .stat-card-type { font-size: 1em; opacity: 0.9; }
+        .stat-card-stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 20px; }
+        .stat-card-stat { text-align: center; padding: 10px; background: #f5f5f5; border-radius: 4px; border: 1px solid #ddd; }
+        .stat-card-stat-label { font-size: 0.8em; color: #666; margin-bottom: 5px; }
+        .stat-card-stat-value { font-size: 1.3em; font-weight: bold; color: #c73e1d; }
+        .stat-card-section { margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px; }
+        .stat-card-section-title { font-weight: bold; color: #c73e1d; margin-bottom: 10px; font-size: 1.1em; }
+        .stat-card-item { padding: 8px 0; border-bottom: 1px solid #eee; }
+        .stat-card-item:last-child { border-bottom: none; }
+        .stat-card-footer { margin-top: 20px; padding-top: 15px; border-top: 2px solid #c73e1d; display: flex; justify-content: space-between; font-weight: bold; }
+        .print-area { display: none; }
+        @media (max-width: 768px) { h1 { font-size: 1.8em; } .points-display { flex-direction: column; } .stat-card { width: 100%; margin: 10px 0; } }
     </style>
 </head>
 <body>
-
-<div class="sidebar">
-    <div class="app-title">Tactics Terminal</div>
-
-    <div class="control-group">
-        <label class="control-label">Force Name</label>
-        <input type="text" id="army-name" placeholder="e.g. 2nd Colonial Militia">
+    <div class="notification" id="notification"></div>
+    <div class="container no-print">
+        <header>
+            <h1>🚀 Five Parsecs from Home: Tactics</h1>
+            <div class="subtitle">Comprehensive Army Builder</div>
+        </header>
+        <div class="army-name-section">
+            <input type="text" id="armyName" class="army-name-input" placeholder="Enter your army name...">
+        </div>
+        <div id="validationStatus" class="validation-status"></div>
+        <div class="points-display">
+            <div class="points-item"><div class="points-label">Total Points</div><div class="points-value" id="totalPoints">0</div></div>
+            <div class="points-item"><div class="points-label">Units</div><div class="points-value" id="unitCount">0</div></div>
+            <div class="points-item"><div class="points-label">Point Limit</div><div class="points-value"><input type="number" id="pointLimit" value="500" onchange="validateArmy()" style="width: 100px; text-align: center; background: rgba(0,0,0,0.3); border: 1px solid #c73e1d; color: #c73e1d; font-size: 0.8em; padding: 5px;"></div></div>
+        </div>
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('army')">📋 My Army</button>
+        </div>
+        <div id="army" class="tab-content active">
+            <div class="section">
+                <h2 class="section-title">Build Your Army</h2>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px;">
+                    <button onclick="startAddUnit('leader')">➕ Add Leader</button>
+                    <button onclick="startAddUnit('infantry')">➕ Add Infantry</button>
+                    <button onclick="startAddUnit('support')">➕ Add Support</button>
+                </div>
+            </div>
+            <div class="section">
+                <h2 class="section-title">Current Army List</h2>
+                <div class="army-list" id="armyList">
+                    <p style="opacity: 0.6; text-align: center; padding: 40px;">Your army is empty. Add units!</p>
+                </div>
+            </div>
+            <div class="section">
+                <h3 class="section-title">Export & Print</h3>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+                    <button onclick="printStatCards()">🖨️ Print Stat Cards</button>
+                    <button onclick="exportAsText()">📄 Export as Text</button>
+                    <button onclick="exportAsJSON()">💾 Download JSON</button>
+                    <button onclick="importJSON()" class="btn-secondary">📂 Import JSON</button>
+                    <button onclick="clearArmy()" class="btn-danger">🗑️ Clear Army</button>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div class="control-group">
-        <label class="control-label">Add Unit</label>
-        <select id="sel-role" onchange="updateUnitList()">
-            <option value="" disabled selected>1. Select Role...</option>
-            <option value="Leader">Leader (1-2)</option>
-            <option value="Troops">Troops (2-4)</option>
-            <option value="Support">Support (0-3)</option>
-            <option value="Specialist">Specialist (1 per 2 Troops)</option>
-        </select>
-        <select id="sel-unit" disabled>
-            <option>2. Select Unit...</option>
-        </select>
-        <button class="btn btn-primary" id="btn-add" onclick="addUnit()" disabled>+ Add to Platoon</button>
-    </div>
-
-    <div class="status-panel">
-        <div class="status-row"><span>Total Points:</span> <span id="val-pts" class="status-val">0</span></div>
-        <div class="status-row"><span>Leaders:</span> <span id="val-lead">0</span></div>
-        <div class="status-row"><span>Troops:</span> <span id="val-troop">0</span></div>
-        <div class="status-row"><span>Support:</span> <span id="val-supp">0</span></div>
-        <div class="status-row"><span>Specialists:</span> <span id="val-spec">0</span></div>
-        
-        <div id="validation-msg" class="status-msg"></div>
-    </div>
-
-    <button class="btn btn-print" onclick="generatePDF()">🖨️ Print Data Cards (PDF)</button>
-</div>
-
-<div class="main-content" id="roster">
-    </div>
-
-<script>
-    // --- DATA REPOSITORY ---
-
-    // Stats: [Speed, Reaction, Combat, Toughness, KP, Savvy, Training]
-    // Veh Stats: [Speed, Toughness, KP, Capacity]
+    <div class="print-area" id="printArea"></div>
     
-    const UNITS = {
-        // --- LEADERS ---
-        "Minor Character": { role: "Leader", type: "Infantry", models: 1, base: 15, stats: ['5"','4','+0','4','1','+0','+0'], wpn: "Hand Laser" },
-        "Major Character": { role: "Leader", type: "Infantry", models: 1, base: 35, stats: ['6"','5','+1','4','2','+1','+1'], wpn: "Hand Laser" },
+    <div id="unitModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeUnitModal()">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
 
-        // --- TROOPS ---
-        "Infantry Squad": { role: "Troops", type: "Infantry", models: 5, base: 27, stats: ['4"','2','+0','3','1','+0','+0'], wpn: "Military Rifle", heavy:1 },
-        "Recon Squad": { role: "Troops", type: "Infantry", models: 5, base: 23, stats: ['5"','3','+0','3','1','+1','+0'], wpn: "Military Rifle" },
-        "Storm Squad": { role: "Troops", type: "Infantry", models: 5, base: 28, stats: ['4"','2','+1','4','1','+0','+1'], wpn: "Shotgun" },
-        "Militia Squad": { role: "Troops", type: "Infantry", models: 5, base: 15, stats: ['4"','1','+0','3','1','+0','+0'], wpn: "Military Rifle", noSgt: true },
-        "Enforcer Squad": { role: "Troops", type: "Infantry", models: 5, base: 15, stats: ['4"','2','+0','3','1','+0','+0'], wpn: "Shotgun" },
-        "Pirate Squad": { role: "Troops", type: "Infantry", models: 5, base: 22, stats: ['4"','2','+1','3','1','+0','+0'], wpn: "Blaster" },
-        "Cavalry Squad": { role: "Troops", type: "Infantry", models: 5, base: 25, stats: ['8"','2','+1','4','1','+0','+0'], wpn: "Military Rifle" },
-
-        // --- SUPPORT (VEHICLES) ---
-        "Nomad Bike": { role: "Support", type: "Vehicle", base: 15, vStats: ['12"', '6', '2', '0'], hardpoints: ["Forward Mount"] },
-        "Scouter Bike": { role: "Support", type: "Vehicle", base: 35, vStats: ['16"', '5', '2', '0'], hardpoints: ["Forward Mount"] },
-        "Lancer Bike": { role: "Support", type: "Vehicle", base: 30, vStats: ['12"', '5', '2', '0'], hardpoints: ["Forward Mount"] },
-        "Frontier Trike": { role: "Support", type: "Vehicle", base: 35, vStats: ['10"', '6', '3', '0'], hardpoints: ["Forward", "Side Mount"] },
-        "Raider Trike": { role: "Support", type: "Vehicle", base: 35, vStats: ['15"', '5', '3', '0'], hardpoints: ["Forward", "Side Mount"] },
-        
-        "Armored Car": { role: "Support", type: "Vehicle", base: 60, vStats: ['9"', '7', '5', '0'], hardpoints: ["Turret"] },
-        "APC (Tracked)": { role: "Support", type: "Vehicle", base: 50, vStats: ['8"', '7', '5', '10'], hardpoints: ["Turret"] },
-        "APC (Grav)": { role: "Support", type: "Vehicle", base: 55, vStats: ['9"', '7', '4', '8'], hardpoints: ["Turret"] },
-        "IFV (Tracked)": { role: "Support", type: "Vehicle", base: 70, vStats: ['8"', '7', '5', '6'], hardpoints: ["Front", "Turret"] },
-        
-        "Light Tank": { role: "Support", type: "Vehicle", base: 100, vStats: ['8"', '8', '6', '0'], hardpoints: ["Front", "Coaxial", "Turret"] },
-        "Medium Tank": { role: "Support", type: "Vehicle", base: 140, vStats: ['7"', '9', '7', '0'], hardpoints: ["Front", "Coaxial", "Turret"] },
-        "Heavy Tank": { role: "Support", type: "Vehicle", base: 200, vStats: ['6"', '10', '8', '0'], hardpoints: ["Front", "Coaxial", "Turret"] },
-        
-        "Light Walker": { role: "Support", type: "Vehicle", base: 70, vStats: ['5"', '8', '4', '0'], hardpoints: ["Arm R", "Arm L"] },
-        "Heavy Walker": { role: "Support", type: "Vehicle", base: 100, vStats: ['4"', '8', '5', '0'], hardpoints: ["Shoulder", "Arm R", "Arm L"] },
-        
-        // --- SUPPORT (TEAMS) ---
-        "Weapon Team": { role: "Support", type: "Team", models: 3, base: 5, stats: ['4"','2','+0','3','1','+0','+0'], wpn: "Pistol", teamWpn: true },
-
-        // --- SPECIALISTS ---
-        "Tech": { role: "Specialist", type: "Specialist", models: 1, base: 5, stats: ['4"','2','+0','3','1','+0','+0'], wpn: "Pistol" },
-        "Sharpshooter": { role: "Specialist", type: "Specialist", models: 1, base: 15, stats: ['4"','3','+0','3','1','+0','+0'], wpn: "Sniper Rifle" },
-        "Medic": { role: "Specialist", type: "Specialist", models: 1, base: 10, stats: ['4"','2','+0','3','1','+0','+0'], wpn: "Pistol" },
-        "Scout": { role: "Specialist", type: "Specialist", models: 1, base: 10, stats: ['5"','2','+0','3','1','+0','+0'], wpn: "Infantry Laser" },
-        "Fire Section": { role: "Specialist", type: "Specialist", models: 2, base: 15, stats: ['4"','2','+0','3','1','+0','+0'], wpn: "Plasma Rifle", heavy: 1 }
-    };
-
-    const WEAPONS = {
-        "Unarmed": 0, "Pistol": 0, "Blade": 0,
-        "Hand Laser": 0, "Blast Pistol": 0, "Military Rifle": 3, "Shotgun": 2, "Blaster": 3, "Infantry Laser": 4, 
-        "Sniper Rifle": 10, "Plasma Rifle": 8, "Fusion Rifle": 8, "Light MG": 10, "Heavy MG": 15, "Flamer": 8,
-        "Grenade Launcher": 10, "Hyper Blaster": 6, "Fury Rifle": 7,
-        "20mm Autocannon": 20, "40mm Autocannon": 25, "75mm Cannon": 45, "100mm Cannon": 55,
-        "Laser Cannon": 35, "Pulse Laser": 35, "Anti-Tank Laser": 0, "Heavy Plasma": 20
-    };
-
-    const SQUAD_UPGRADES = {
-        "Grenades (Frag)": 2, "Grenades (Fog)": 5, "Grenades (Penetrator)": 10,
-        "Infantry Lasers (Swap)": 4, "Blasters (Swap)": 5, "Pistols (Add)": 5,
-        "Breach Armor (x5)": 20, "Powered Armor (x5)": 10
-    };
-
-    const VET_SKILLS = {
-        "None": 0, "Brave (+10)": 10, "Tank Hunters (+15)": 15, "Keen Shots (+10)": 10,
-        "Die-hards (+5)": 5, "Fire Drill (+10)": 10, "Brawlers (+5)": 5, "Fearless (+5)": 5,
-        "Gunnery (Veh) (+15)": 15, "Command (Veh) (+10)": 10, "Driving (Veh) (+10)": 10
-    };
-
-    const ATTACHMENTS = {
-        "None": 0, "Tech (+5)": 5, "Medic (+10)": 10, "Comms (+10)": 10, "Scout (+10)": 10
-    };
-
-    let roster = [];
-
-    // --- LOGIC ---
-
-    function updateUnitList() {
-        const role = document.getElementById('sel-role').value;
-        const list = document.getElementById('sel-unit');
-        list.innerHTML = `<option value="" disabled selected>2. Select Unit...</option>`;
-        list.disabled = false;
-        document.getElementById('btn-add').disabled = true;
-
-        for (let name in UNITS) {
-            if (UNITS[name].role === role) {
-                list.innerHTML += `<option value="${name}">${name} (${UNITS[name].base} pts)</option>`;
+    <script>
+        const vehicleDatabase = {
+            nominal_bike: { 
+                name: 'Nominal Bike', 
+                baseCost: 15, 
+                speed: '12" Wheeled', 
+                touchiness: 6, 
+                kp: 2, 
+                crew: 1, 
+                capacity: 0, 
+                baseWeapons: [], 
+                weaponOptions: [
+                    { id: 'lmg', name: 'Add forward-firing light machine gun', cost: 10 }
+                ], 
+                upgradeOptions: [
+                    { id: 'armor', name: 'Armored plating', cost: 5 },
+                    { id: 'speed', name: 'Enhanced engine', cost: 5 }
+                ],
+                addonOptions: [
+                    { id: 'storage', name: 'Storage compartment', cost: 2 },
+                    { id: 'comms', name: 'Enhanced communications', cost: 3 }
+                ],
+                notes: 'Unarmed by default' 
+            },
+            scooter: { 
+                name: 'Scooter', 
+                baseCost: 35, 
+                speed: '16" Drifter', 
+                touchiness: 5, 
+                kp: 2, 
+                crew: 1, 
+                capacity: 0, 
+                baseWeapons: ['Forward-firing light machine gun'], 
+                weaponOptions: [], 
+                upgradeOptions: [
+                    { id: 'armor', name: 'Light armor plating', cost: 5 }
+                ],
+                addonOptions: [
+                    { id: 'scout', name: 'Scout equipment', cost: 3 }
+                ],
+                notes: '' 
+            },
+            lancer: { 
+                name: 'Lancer', 
+                baseCost: 30, 
+                speed: '12" Drifter', 
+                touchiness: 5, 
+                kp: 2, 
+                crew: 2, 
+                capacity: 1, 
+                baseWeapons: ['Forward gun mount', 'Plasma rifle'], 
+                weaponOptions: [
+                    { id: 'upgrade_plasma', name: 'Upgrade to heavy plasma rifle', cost: 10 }
+                ], 
+                upgradeOptions: [
+                    { id: 'armor', name: 'Armor plating', cost: 5 }
+                ],
+                addonOptions: [
+                    { id: 'storage', name: 'Additional storage', cost: 2 }
+                ],
+                notes: '' 
+            },
+            raider_trike: { 
+                name: 'Raider Trike', 
+                baseCost: 35, 
+                speed: '15" Wheeled', 
+                touchiness: 5, 
+                kp: 3, 
+                crew: 2, 
+                capacity: 0, 
+                baseWeapons: ['Light machine gun'], 
+                weaponOptions: [
+                    { id: 'autocannon', name: 'Replace LMG with autocannon', cost: 10 }
+                ], 
+                upgradeOptions: [
+                    { id: 'armor', name: 'Reinforced frame', cost: 5 }
+                ],
+                addonOptions: [
+                    { id: 'sidecar', name: 'Combat sidecar', cost: 5 }
+                ],
+                notes: '' 
+            },
+            frontier_trike: { 
+                name: 'Frontier Trike', 
+                baseCost: 35, 
+                speed: '15" Wheeled', 
+                touchiness: 6, 
+                kp: 3, 
+                crew: 2, 
+                capacity: 0, 
+                baseWeapons: ['Light machine gun'], 
+                weaponOptions: [
+                    { id: 'sidecar', name: 'Sidecar gun mount', cost: 5 },
+                    { id: 'firepower', name: 'Firepower upgrade', cost: 7 }
+                ], 
+                upgradeOptions: [
+                    { id: 'armor', name: 'Armor plating', cost: 5 }
+                ],
+                addonOptions: [
+                    { id: 'recon', name: 'Reconnaissance gear', cost: 3 }
+                ],
+                notes: '' 
+            },
+            fn_gray: { 
+                name: 'FN-Gray', 
+                baseCost: 75, 
+                speed: '9" Drifter', 
+                touchiness: 7, 
+                kp: 4, 
+                crew: 3, 
+                capacity: 5, 
+                baseWeapons: ['Front: Light machine gun', 'Turret: 20mm autocannon'], 
+                weaponOptions: [
+                    { id: 'heavy_plasma', name: 'Replace 20mm with heavy plasma gun (+upgrade cost)', cost: 10 }
+                ], 
+                upgradeOptions: [
+                    { id: 'armor', name: 'Heavy armor upgrade', cost: 10 },
+                    { id: 'targeting', name: 'Targeting computer', cost: 8 }
+                ],
+                addonOptions: [
+                    { id: 'transport', name: 'Troop transport upgrades', cost: 5 },
+                    { id: 'medical', name: 'Medical bay', cost: 7 }
+                ],
+                notes: '' 
+            },
+            light_tank: { 
+                name: 'Light Tank', 
+                baseCost: 100, 
+                speed: '8" Tracked', 
+                touchiness: 8, 
+                kp: 6, 
+                crew: 4, 
+                capacity: 0, 
+                baseWeapons: ['Front: LMG', 'Coaxial: LMG', 'Turret: 40mm cannon'], 
+                weaponOptions: [
+                    { id: 'heavy_plasma', name: 'Replace 40mm with heavy plasma gun (+upgrade cost)', cost: 10 }
+                ], 
+                upgradeOptions: [
+                    { id: 'reactive_armor', name: 'Reactive armor', cost: 15 },
+                    { id: 'stabilizers', name: 'Gun stabilizers', cost: 10 }
+                ],
+                addonOptions: [
+                    { id: 'smoke', name: 'Smoke launchers', cost: 5 },
+                    { id: 'comms', name: 'Command communications', cost: 8 }
+                ],
+                notes: '' 
+            },
+            medium_tank: { 
+                name: 'Medium Tank', 
+                baseCost: 140, 
+                speed: '7" Tracked', 
+                touchiness: 9, 
+                kp: 7, 
+                crew: 4, 
+                capacity: 0, 
+                baseWeapons: ['Front: LMG', 'Coaxial: LMG', 'Turret: 100mm cannon'], 
+                weaponOptions: [
+                    { id: 'heavy_plasma', name: 'Replace 100mm with heavy plasma gun (no upgrade cost)', cost: 0 }, 
+                    { id: 'tank_laser', name: 'Replace 100mm with tank laser (no upgrade cost)', cost: 0 }
+                ], 
+                upgradeOptions: [
+                    { id: 'composite_armor', name: 'Composite armor', cost: 20 },
+                    { id: 'advanced_targeting', name: 'Advanced targeting system', cost: 12 }
+                ],
+                addonOptions: [
+                    { id: 'smoke', name: 'Smoke launchers', cost: 5 },
+                    { id: 'mine_plow', name: 'Mine plow', cost: 8 },
+                    { id: 'comms', name: 'Command communications', cost: 8 }
+                ],
+                notes: '' 
+            },
+            light_walker: { 
+                name: 'Light Walker', 
+                baseCost: 70, 
+                speed: '5" Walker', 
+                touchiness: 8, 
+                kp: 4, 
+                crew: 1, 
+                capacity: 0, 
+                baseWeapons: ['1 arm with LMG'], 
+                weaponOptions: [
+                    { id: 'heavy_plasma', name: 'Replace LMG with heavy plasma gun', cost: 10 }, 
+                    { id: 'fusion', name: 'Replace LMG with fusion rifle', cost: 10 }
+                ], 
+                upgradeOptions: [
+                    { id: 'jump_jets', name: 'Jump jets', cost: 15 },
+                    { id: 'shield', name: 'Energy shield', cost: 12 }
+                ],
+                addonOptions: [
+                    { id: 'sensor', name: 'Advanced sensors', cost: 8 }
+                ],
+                notes: 'Walkers fire both weapons simultaneously' 
+            },
+            heavy_tank: { 
+                name: 'Heavy Tank', 
+                baseCost: 200, 
+                speed: '6" Tracked', 
+                touchiness: 10, 
+                kp: 8, 
+                crew: 5, 
+                capacity: 0, 
+                baseWeapons: ['LMG', 'LMG', 'Main gun'], 
+                weaponOptions: [
+                    { id: 'plasma_1', name: 'Replace first LMG with heavy plasma gun (+upgrade cost)', cost: 10 }, 
+                    { id: 'plasma_2', name: 'Replace second LMG with heavy plasma gun (+upgrade cost)', cost: 10 }
+                ], 
+                upgradeOptions: [
+                    { id: 'super_heavy_armor', name: 'Super-heavy armor', cost: 25 },
+                    { id: 'fire_control', name: 'Advanced fire control', cost: 15 }
+                ],
+                addonOptions: [
+                    { id: 'smoke', name: 'Smoke launchers', cost: 5 },
+                    { id: 'dozer', name: 'Dozer blade', cost: 10 },
+                    { id: 'comms', name: 'Command communications', cost: 8 }
+                ],
+                notes: '' 
+            },
+            heavy_walker: { 
+                name: 'Heavy Walker', 
+                baseCost: 100, 
+                speed: '4" Walker', 
+                touchiness: 8, 
+                kp: 5, 
+                crew: 1, 
+                capacity: 0, 
+                baseWeapons: ['Shoulder: Pulse laser', 'Arm: LMG'], 
+                weaponOptions: [
+                    { id: 'missile', name: 'Add missile pod', cost: 15 }
+                ], 
+                upgradeOptions: [
+                    { id: 'heavy_armor', name: 'Heavy armor plating', cost: 15 },
+                    { id: 'targeting', name: 'Targeting computer', cost: 10 }
+                ],
+                addonOptions: [
+                    { id: 'jump_jets', name: 'Jump jets', cost: 15 },
+                    { id: 'sensor', name: 'Advanced sensors', cost: 8 }
+                ],
+                notes: 'Walkers fire both weapons simultaneously' 
+            },
+            cimal: { 
+                name: 'CIMA-L', 
+                baseCost: 35, 
+                speed: '6" Walker', 
+                touchiness: 7, 
+                kp: 9, 
+                crew: 0, 
+                capacity: 0, 
+                baseWeapons: ['Hyper blaster'], 
+                weaponOptions: [
+                    { id: 'fury', name: 'Replace hyper blaster with fury rifle (no upgrade cost)', cost: 0 }
+                ], 
+                upgradeOptions: [
+                    { id: 'ai_upgrade', name: 'Advanced AI core', cost: 10 }
+                ],
+                addonOptions: [
+                    { id: 'recon', name: 'Reconnaissance suite', cost: 5 }
+                ],
+                notes: '' 
+            },
+            cimap: { 
+                name: 'CIMA-RP', 
+                baseCost: 45, 
+                speed: '4" Walker', 
+                touchiness: 8, 
+                kp: 4, 
+                crew: 0, 
+                capacity: 0, 
+                baseWeapons: ['20mm autocannon'], 
+                weaponOptions: [
+                    { id: 'grenade', name: 'Add grenade launcher', cost: 8 }
+                ], 
+                upgradeOptions: [
+                    { id: 'ai_upgrade', name: 'Advanced AI core', cost: 10 },
+                    { id: 'armor', name: 'Armor plating', cost: 8 }
+                ],
+                addonOptions: [
+                    { id: 'ecm', name: 'ECM suite', cost: 7 }
+                ],
+                notes: 'Advanced Purpose Platform' 
+            },
+            armored_car: { 
+                name: 'Armored Car', 
+                baseCost: 60, 
+                speed: '9" Wheeled', 
+                touchiness: 7, 
+                kp: 5, 
+                crew: 2, 
+                capacity: 8, 
+                baseWeapons: [], 
+                weaponOptions: [
+                    { id: 'lmg_front', name: 'Front mount: Light machine gun', cost: 0 }, 
+                    { id: 'lmg_turret', name: 'Turret mount: Light machine gun', cost: 0 }, 
+                    { id: '20mm_turret', name: 'Turret mount: 20mm autocannon', cost: 20 }
+                ], 
+                upgradeOptions: [
+                    { id: 'armor', name: 'Additional armor', cost: 10 }
+                ],
+                addonOptions: [
+                    { id: 'scout', name: 'Scout equipment', cost: 5 },
+                    { id: 'comms', name: 'Communications gear', cost: 5 }
+                ],
+                notes: 'Armored reconnaissance vehicle' 
+            },
+            apc: { 
+                name: 'APC', 
+                baseCost: 50, 
+                speed: '8" Tracked', 
+                touchiness: 7, 
+                kp: 5, 
+                crew: 2, 
+                capacity: 10, 
+                baseWeapons: [], 
+                weaponOptions: [
+                    { id: 'lmg_front', name: 'Front mount: Light machine gun', cost: 0 }, 
+                    { id: 'lmg_turret', name: 'Turret mount: Light machine gun', cost: 0 }, 
+                    { id: '20mm_turret', name: 'Turret mount: 20mm autocannon (+upgrade cost)', cost: 20 }
+                ], 
+                upgradeOptions: [
+                    { id: 'armor', name: 'Applique armor', cost: 10 },
+                    { id: 'amphibious', name: 'Amphibious capability', cost: 15 }
+                ],
+                addonOptions: [
+                    { id: 'medical', name: 'Medical bay', cost: 8 },
+                    { id: 'command', name: 'Command module', cost: 10 }
+                ],
+                notes: 'Standard troop transport' 
+            },
+            ifv: { 
+                name: 'IFV', 
+                baseCost: 70, 
+                speed: '8" Tracked', 
+                touchiness: 7, 
+                kp: 5, 
+                crew: 3, 
+                capacity: 6, 
+                baseWeapons: ['20mm autocannon'], 
+                weaponOptions: [
+                    { id: 'heavy_plasma', name: 'Replace 20mm with heavy plasma gun (no upgrade cost)', cost: 0 },
+                    { id: 'atgm', name: 'Add ATGM launcher', cost: 15 }
+                ], 
+                upgradeOptions: [
+                    { id: 'armor', name: 'Additional armor', cost: 12 },
+                    { id: 'fire_control', name: 'Fire control system', cost: 10 }
+                ],
+                addonOptions: [
+                    { id: 'smoke', name: 'Smoke launchers', cost: 5 },
+                    { id: 'comms', name: 'Enhanced communications', cost: 8 }
+                ],
+                notes: 'Infantry Fighting Vehicle' 
             }
-        }
-    }
-
-    document.getElementById('sel-unit').addEventListener('change', () => {
-        document.getElementById('btn-add').disabled = false;
-    });
-
-    function addUnit() {
-        const name = document.getElementById('sel-unit').value;
-        const tmpl = UNITS[name];
-        
-        let unit = {
-            id: Date.now(),
-            name: name,
-            template: name,
-            role: tmpl.role,
-            type: tmpl.type,
-            
-            // Config
-            customName: "",
-            mainWeapon: tmpl.wpn || "Unarmed",
-            specialWeapon: "None",
-            hardpoints: {},
-            upgrades: [],
-            veteran: "None",
-            attachment: "None"
         };
 
-        // Init Vehicle Hardpoints
-        if (tmpl.type === "Vehicle" && tmpl.hardpoints) {
-            tmpl.hardpoints.forEach(hp => unit.hardpoints[hp] = "None");
-        }
-        
-        // Init Team Weapon
-        if (tmpl.teamWpn) {
-            unit.hardpoints["Main Gun"] = "Laser Cannon"; // Default
-        }
+        const veteranSkills = [
+            { id: 'brave', name: 'Brave', cost: 10, desc: '+1 to all Morale tests' },
+            { id: 'tank_hunters', name: 'Tank hunters', cost: 10, desc: 'Shoot with two weapons and add +1 KP vs tanks (only one squad may take)' },
+            { id: 'keen_shots', name: 'Keen shots', cost: 10, desc: 'All figures add +1 KP to hit rifle shots per activation' },
+            { id: 'dishards', name: 'Dishards', cost: 10, desc: 'When deploying, can auto-replace damaged figures except leader' },
+            { id: 'fire_drill', name: 'Fire drill', cost: 10, desc: 'Squad doesn\'t move when activating: +1 to all hit rolls' },
+            { id: 'brawlers', name: 'Brawlers', cost: 5, desc: 'In close assault: re-roll 1s on attack dice' },
+            { id: 'fearless', name: 'Fearless', cost: 35, desc: 'Squad becomes fearless (see page 26)' },
+            { id: 'bombers', name: 'Bombers', cost: 5, desc: 'More figures per activation may throw grenades (not just 2)' },
+            { id: 'guerillas', name: 'Guerillas', cost: 10, desc: 'Squad may be deployed while battling' },
+            { id: 'quick', name: 'Quick', cost: 10, desc: 'Squad moves +4" when Dashing (instead of +2")' }
+        ];
 
-        roster.push(unit);
-        render();
-    }
+        let army = [];
+        let armyName = '';
+        let currentUnit = null;
+        let editMode = false;
 
-    function remove(id) {
-        roster = roster.filter(u => u.id !== id);
-        render();
-    }
+        document.addEventListener('DOMContentLoaded', () => {
+            updateArmyDisplay();
+            validateArmy();
+            document.getElementById('armyName').addEventListener('input', (e) => { armyName = e.target.value; });
+        });
 
-    function calcCost(u) {
-        const tmpl = UNITS[u.template];
-        let cost = tmpl.base;
-
-        // Infantry Weapon Swaps (Standard logic: If upgrading entire squad)
-        // Note: 5PFH Logic is simpler "Swap X for Y (+Points)". 
-        // We will just add the cost of upgrades selected.
-        
-        u.upgrades.forEach(upg => cost += SQUAD_UPGRADES[upg]);
-        
-        // Special Weapons (Single model swaps)
-        if (u.specialWeapon && u.specialWeapon !== "None") {
-            cost += WEAPONS[u.specialWeapon];
+        function switchTab(t) {
+            document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(e => e.classList.remove('active'));
+            document.getElementById(t).classList.add('active');
+            event.target.classList.add('active');
         }
 
-        // Vehicle / Team Weapons
-        for (let hp in u.hardpoints) {
-            let wpn = u.hardpoints[hp];
-            if (wpn !== "None" && WEAPONS[wpn]) cost += WEAPONS[wpn];
+        function startAddUnit(type) {
+            currentUnit = { type: type, selectedWeapons: [], selectedUpgrades: [], veteranSkills: [] };
+            editMode = false;
+            
+            if (type === 'vehicle') {
+                showVehicleSelection();
+            } else if (type === 'leader') {
+                showLeaderTypeSelection();
+            } else if (type === 'infantry') {
+                showInfantryTypeSelection();
+            } else if (type === 'support') {
+                showSupportTypeSelection();
+            }
         }
 
-        // Skills & Attachments
-        if (VET_SKILLS[u.veteran]) cost += VET_SKILLS[u.veteran];
-        if (ATTACHMENTS[u.attachment]) cost += ATTACHMENTS[u.attachment];
-
-        // Leader Upgrades (Manual logic: Hero +5)
-        if (u.upgrades.includes("Hero (+5)")) cost += 5;
-        if (u.upgrades.includes("Leader Ability (+10)")) cost += 10;
-
-        return cost;
-    }
-
-    function render() {
-        const container = document.getElementById('roster');
-        container.innerHTML = "";
-        
-        let stats = { pts:0, lead:0, troop:0, supp:0, spec:0 };
-
-        roster.forEach(u => {
-            const tmpl = UNITS[u.template];
-            const cost = calcCost(u);
-            stats.pts += cost;
-            if (u.role === "Leader") stats.lead++;
-            if (u.role === "Troops") stats.troop++;
-            if (u.role === "Support") stats.supp++;
-            if (u.role === "Specialist") stats.spec++;
-
-            const div = document.createElement('div');
-            div.className = `unit-card role-${u.role}`;
-
-            // --- HEADER ---
-            let header = `
-                <div class="card-header">
-                    <div style="display:flex; align-items:center; width:100%;">
-                        <span class="role-badge">${u.role}</span>
-                        <input type="text" value="${u.customName}" placeholder="${u.name}" 
-                            style="background:transparent; border:none; font-weight:bold; color:white; margin:0; width:180px;"
-                            onchange="update(this, ${u.id}, 'customName')">
+        function showVehicleSelection() {
+            let html = '<div class="step-indicator"><div class="step-indicator-title">Step 1: Select Vehicle</div></div>';
+            html += '<h2 class="section-title">Select a Vehicle</h2>';
+            
+            Object.keys(vehicleDatabase).forEach(key => {
+                const v = vehicleDatabase[key];
+                html += `
+                    <div class="unit-selector" onclick="selectVehicle('${key}')">
+                        <div class="unit-selector-name">${v.name}</div>
+                        <div class="unit-selector-stats">
+                            <div class="unit-selector-stat"><span class="unit-selector-stat-label">Speed:</span> <span class="unit-selector-stat-value">${v.speed}</span></div>
+                            <div class="unit-selector-stat"><span class="unit-selector-stat-label">T:</span> <span class="unit-selector-stat-value">${v.touchiness}</span></div>
+                            <div class="unit-selector-stat"><span class="unit-selector-stat-label">KP:</span> <span class="unit-selector-stat-value">${v.kp}</span></div>
+                            <div class="unit-selector-stat"><span class="unit-selector-stat-label">Crew:</span> <span class="unit-selector-stat-value">${v.crew}</span></div>
+                            <div class="unit-selector-stat"><span class="unit-selector-stat-label">Capacity:</span> <span class="unit-selector-stat-value">${v.capacity}</span></div>
+                        </div>
+                        <div class="unit-selector-cost">Cost: ${v.baseCost} points</div>
+                        ${v.baseWeapons.length > 0 ? `<div class="unit-selector-notes"><strong>Weapons:</strong> ${v.baseWeapons.join(', ')}</div>` : ''}
+                        ${v.notes ? `<div class="unit-selector-notes">${v.notes}</div>` : ''}
                     </div>
-                    <div style="font-weight:bold; color:#fff; white-space:nowrap;">${cost} PTS</div>
-                    <button class="del-btn" onclick="remove(${u.id})" style="margin-left:10px;">&times;</button>
-                </div>`;
-
-            // --- STATS ---
-            let statHTML = "";
-            if (tmpl.type === "Vehicle") {
-                statHTML = `
-                <div class="stats-container">
-                    <div class="stat-box"><span class="stat-lbl">SPD</span><span class="stat-val">${tmpl.vStats[0]}</span></div>
-                    <div class="stat-box"><span class="stat-lbl">TOU</span><span class="stat-val">${tmpl.vStats[1]}</span></div>
-                    <div class="stat-box"><span class="stat-lbl">KP</span><span class="stat-val">${tmpl.vStats[2]}</span></div>
-                    <div class="stat-box"><span class="stat-lbl">CAP</span><span class="stat-val">${tmpl.vStats[3]}</span></div>
-                </div>`;
-            } else {
-                statHTML = `
-                <div class="stats-container">
-                    <div class="stat-box"><span class="stat-lbl">SPD</span><span class="stat-val">${tmpl.stats[0]}</span></div>
-                    <div class="stat-box"><span class="stat-lbl">REA</span><span class="stat-val">${tmpl.stats[1]}</span></div>
-                    <div class="stat-box"><span class="stat-lbl">COM</span><span class="stat-val">${tmpl.stats[2]}</span></div>
-                    <div class="stat-box"><span class="stat-lbl">TOU</span><span class="stat-val">${tmpl.stats[3]}</span></div>
-                    <div class="stat-box"><span class="stat-lbl">KP</span><span class="stat-val">${tmpl.stats[4]}</span></div>
-                    <div class="stat-box"><span class="stat-lbl">SAV</span><span class="stat-val">${tmpl.stats[5]}</span></div>
-                    <div class="stat-box"><span class="stat-lbl">TRN</span><span class="stat-val">${tmpl.stats[6]}</span></div>
-                </div>`;
-            }
-
-            // --- CONFIG ---
-            let configHTML = "";
+                `;
+            });
             
-            // 1. Weapons (Hardpoints for Vehicles, Special for Inf)
-            if (tmpl.type === "Vehicle") {
-                for (let hp in u.hardpoints) {
-                    configHTML += `
-                    <div class="opt-row">
-                        <span>${hp}</span>
-                        <select onchange="update(this, ${u.id}, 'hp', '${hp}')">
-                            <option value="None">Empty</option>
-                            ${Object.keys(WEAPONS).filter(k => WEAPONS[k] > 0).map(w => 
-                                `<option value="${w}" ${u.hardpoints[hp]===w?'selected':''}>${w} (+${WEAPONS[w]})</option>`).join('')}
-                        </select>
-                    </div>`;
-                }
-            } else if (tmpl.role === "Troops" && !tmpl.noSgt) {
-                // Infantry Special Weapon Slot
-                configHTML += `
-                <div class="opt-row">
-                    <span>Specialist Weapon</span>
-                    <select onchange="update(this, ${u.id}, 'specWpn')">
-                        <option value="None">None</option>
-                        ${Object.keys(WEAPONS).filter(k => WEAPONS[k] > 5).map(w => 
-                            `<option value="${w}" ${u.specialWeapon===w?'selected':''}>${w} (+${WEAPONS[w]})</option>`).join('')}
-                    </select>
-                </div>`;
-            } else if (tmpl.teamWpn) {
-                configHTML += `
-                <div class="opt-row">
-                    <span>Heavy Weapon</span>
-                    <select onchange="update(this, ${u.id}, 'hp', 'Main Gun')">
-                        <option value="Laser Cannon" ${u.hardpoints['Main Gun']==="Laser Cannon"?'selected':''}>Laser Cannon (35)</option>
-                        <option value="20mm Autocannon" ${u.hardpoints['Main Gun']==="20mm Autocannon"?'selected':''}>20mm Autocannon (20)</option>
-                        <option value="Infantry Mortar" ${u.hardpoints['Main Gun']==="Infantry Mortar"?'selected':''}>Infantry Mortar (15)</option>
-                    </select>
-                </div>`;
-            }
-
-            // 2. Upgrades (Checkbox Grid)
-            let availUpgrades = [];
-            if (u.role === "Leader") availUpgrades = ["Hero (+5)", "Leader Ability (+10)"];
-            else if (u.role === "Troops") availUpgrades = Object.keys(SQUAD_UPGRADES);
-
-            if (availUpgrades.length > 0) {
-                configHTML += `<div class="section-title" style="margin-top:10px;">Squad Upgrades</div><div class="checkbox-grid">`;
-                availUpgrades.forEach(upg => {
-                    let cost = upg.match(/\d+/) ? "" : ""; // Cost is in name
-                    let checked = u.upgrades.includes(upg) ? "checked" : "";
-                    configHTML += `
-                    <label class="check-item">
-                        <input type="checkbox" ${checked} onchange="update(this, ${u.id}, 'upgrade', '${upg}')">
-                        ${upg}
-                    </label>`;
-                });
-                configHTML += `</div>`;
-            }
-
-            // 3. Vet & Attachments
-            configHTML += `<div class="section-title" style="margin-top:10px;">Training & Support</div>`;
-            
-            configHTML += `
-            <div class="opt-row">
-                <span>Veteran Skill</span>
-                <select onchange="update(this, ${u.id}, 'vet')">
-                    ${Object.keys(VET_SKILLS).map(k => `<option ${u.veteran===k?'selected':''}>${k}</option>`).join('')}
-                </select>
-            </div>`;
-            
-            if (tmpl.type === "Infantry") {
-                configHTML += `
-                <div class="opt-row">
-                    <span>Attachment</span>
-                    <select onchange="update(this, ${u.id}, 'att')">
-                        ${Object.keys(ATTACHMENTS).map(k => `<option ${u.attachment===k?'selected':''}>${k}</option>`).join('')}
-                    </select>
-                </div>`;
-            }
-
-            div.innerHTML = header + `<div class="card-body"><div class="full-col">${statHTML}</div><div class="full-col">${configHTML}</div></div>`;
-            container.appendChild(div);
-        });
-
-        // UPDATE STATUS
-        document.getElementById('val-pts').innerText = stats.pts;
-        document.getElementById('val-lead').innerText = stats.lead;
-        document.getElementById('val-troop').innerText = stats.troop;
-        document.getElementById('val-supp').innerText = stats.supp;
-        document.getElementById('val-spec').innerText = stats.spec;
-
-        validate(stats);
-    }
-
-    function update(el, id, type, key) {
-        let u = roster.find(x => x.id === id);
-        if (!u) return;
-
-        if (type === 'customName') u.customName = el.value;
-        if (type === 'vet') u.veteran = el.value;
-        if (type === 'att') u.attachment = el.value;
-        if (type === 'specWpn') u.specialWeapon = el.value;
-        if (type === 'hp') u.hardpoints[key] = el.value;
-        if (type === 'upgrade') {
-            if (el.checked) u.upgrades.push(key);
-            else u.upgrades = u.upgrades.filter(x => x !== key);
+            document.getElementById('modalContent').innerHTML = html;
+            document.getElementById('unitModal').style.display = 'block';
         }
-        render();
-    }
 
-    function validate(s) {
-        let msg = [];
-        if (s.lead < 1 || s.lead > 2) msg.push("• Leaders: Must have 1-2.");
-        if (s.troop < 2 || s.troop > 4) msg.push("• Troops: Must have 2-4.");
-        if (s.troop > 0 && s.supp >= s.troop) msg.push("• Support: Must be fewer than Troops.");
-        if (s.spec > Math.floor(s.troop / 2)) msg.push("• Specialists: Max 1 per 2 Troops.");
-
-        const box = document.getElementById('validation-msg');
-        if (msg.length === 0) {
-            box.innerHTML = "Platoon Structure Valid ✓";
-            box.className = "status-msg valid-text";
-        } else {
-            box.innerHTML = msg.join("<br>");
-            box.className = "status-msg error-text";
+        function selectVehicle(key) {
+            const v = vehicleDatabase[key];
+            currentUnit.vehicleKey = key;
+            currentUnit.name = v.name;
+            currentUnit.baseCost = v.baseCost;
+            currentUnit.speed = v.speed;
+            currentUnit.touchiness = v.touchiness;
+            currentUnit.kp = v.kp;
+            currentUnit.crew = v.crew;
+            currentUnit.capacity = v.capacity;
+            currentUnit.baseWeapons = [...v.baseWeapons];
+            currentUnit.weaponOptions = v.weaponOptions;
+            currentUnit.upgradeOptions = v.upgrades || [];
+            currentUnit.notes = v.notes;
+            
+            showUnitConfiguration();
         }
-    }
 
-    // --- PDF GENERATION ---
-    function generatePDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const armyName = document.getElementById('army-name').value || "TACTICAL PLATOON";
-
-        // White background for printing
-        doc.setFillColor(255, 255, 255); doc.rect(0, 0, 210, 297, 'F');
-        
-        // Header
-        doc.setTextColor(0); doc.setFontSize(22); doc.setFont(undefined, 'bold');
-        doc.text(armyName.toUpperCase(), 105, 20, null, null, 'center');
-        doc.setFontSize(12); doc.setFont(undefined, 'normal');
-        doc.text(`TOTAL POINTS: ${document.getElementById('val-pts').innerText}`, 105, 27, null, null, 'center');
-
-        let y = 35;
-
-        roster.forEach(u => {
-            if (y > 240) { doc.addPage(); y = 20; }
+        function showLeaderTypeSelection() {
+            let html = `
+                <div class="step-indicator"><div class="step-indicator-title">Step 1: Select Leader Type</div></div>
+                <h2 class="section-title">Leader Type</h2>
+                <p style="margin-bottom: 20px; opacity: 0.9;">Leaders represent different levels of characters (0-1 per platoon)</p>
+            `;
             
-            const tmpl = UNITS[u.template];
-            const cost = calcCost(u);
-
-            // Card Border (Rounded, Black)
-            doc.setDrawColor(0); doc.setLineWidth(0.5);
-            doc.roundedRect(20, y, 170, 50, 2, 2, 'S');
-
-            // Header Strip (Grey)
-            doc.setFillColor(220); 
-            doc.roundedRect(20, y, 170, 10, 2, 2, 'F');
-            doc.rect(20, y+8, 170, 2, 'F'); // Square off bottom corners of header
-
-            // Name & Role
-            doc.setFontSize(11); doc.setFont(undefined, 'bold');
-            let dName = u.customName ? `${u.customName} (${u.name})` : u.name;
-            doc.text(`${dName.toUpperCase()} [${u.role}]`, 25, y+7);
-            doc.text(`${cost} PTS`, 185, y+7, null, null, 'right');
-
-            // Stats Boxes
-            doc.setFontSize(8); doc.setFont(undefined, 'normal');
-            let x = 25;
+            const leaderTypes = [
+                { id: 'minor', name: 'Minor Character', cost: 10, desc: 'Basic leader' },
+                { id: 'major', name: 'Major Character', cost: 20, desc: 'Experienced leader' },
+                { id: 'epic', name: 'Epic-Level Character', cost: 30, desc: 'Legendary leader' }
+            ];
             
-            if (tmpl.type === "Vehicle") {
-                // Vehicle Stats (4 boxes)
-                const labels = ["SPD", "TOU", "KP", "CAP"];
-                const vals = tmpl.vStats;
-                labels.forEach((lbl, i) => {
-                    doc.rect(x, y+13, 12, 12);
-                    doc.setFontSize(6); doc.text(lbl, x+6, y+16, null, null, 'center');
-                    doc.setFontSize(10); doc.setFont(undefined, 'bold'); doc.text(vals[i], x+6, y+22, null, null, 'center');
-                    x += 14;
-                });
-            } else {
-                // Infantry Stats (7 boxes)
-                const labels = ["SPD", "REA", "CBT", "TOU", "KP", "SAV", "TRN"];
-                const vals = tmpl.stats;
-                labels.forEach((lbl, i) => {
-                    doc.rect(x, y+13, 12, 12);
-                    doc.setFontSize(6); doc.text(lbl, x+6, y+16, null, null, 'center');
-                    doc.setFontSize(10); doc.setFont(undefined, 'bold'); doc.text(vals[i], x+6, y+22, null, null, 'center');
-                    x += 14;
+            leaderTypes.forEach(lt => {
+                html += `
+                    <div class="unit-selector" onclick="selectLeaderType('${lt.id}', ${lt.cost}, '${lt.name}')">
+                        <div class="unit-selector-name">${lt.name}</div>
+                        <div class="unit-selector-cost">Cost: ${lt.cost} points</div>
+                        <div class="unit-selector-notes">${lt.desc}</div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('modalContent').innerHTML = html;
+            document.getElementById('unitModal').style.display = 'block';
+        }
+
+        function selectLeaderType(id, cost, name) {
+            currentUnit.subtype = 'leader';
+            currentUnit.leaderType = id;
+            currentUnit.name = name;
+            currentUnit.baseCost = cost;
+            
+            // Add leader options
+            currentUnit.weaponOptions = [
+                { id: 'plasma_pistol', name: 'Plasma pistol', cost: 5 },
+                { id: 'power_weapon', name: 'Power weapon', cost: 8 },
+                { id: 'assault_rifle', name: 'Assault rifle', cost: 3 }
+            ];
+            
+            currentUnit.upgradeOptions = [
+                { id: 'tactical_genius', name: 'Tactical genius (+1 to command rolls)', cost: 10 },
+                { id: 'inspiring', name: 'Inspiring presence (+1 Morale nearby)', cost: 8 },
+                { id: 'combat_expert', name: 'Combat expert (+1 KP in melee)', cost: 7 }
+            ];
+            
+            currentUnit.addonOptions = [
+                { id: 'combat_armor', name: 'Combat armor', cost: 5 },
+                { id: 'scanner', name: 'Advanced scanner', cost: 4 },
+                { id: 'comms', name: 'Command communications', cost: 3 }
+            ];
+            
+            showUnitConfiguration();
+        }
+
+        function showInfantryTypeSelection() {
+            let html = `
+                <div class="step-indicator"><div class="step-indicator-title">Step 1: Select Infantry Type</div></div>
+                <h2 class="section-title">Infantry Type</h2>
+                <p style="margin-bottom: 20px; opacity: 0.9;">Infantry squads (1+ per platoon) - 4 soldiers + 1 sergeant (minor character)</p>
+            `;
+            
+            const infantryTypes = [
+                { id: 'infantry', name: 'Infantry', cost: 27, desc: '4 soldiers + 1 sergeant. Standard combat unit, equipped to carry out an array of battlefield tasks.' },
+                { id: 'recon', name: 'Recon', cost: 23, desc: '4 soldiers + 1 sergeant. Lightly equipped units that harass the enemy from the flanks. +1 to all Observation distances.' },
+                { id: 'storm', name: 'Storm', cost: 28, desc: '4 soldiers + 1 sergeant. Specialist troops for boarding operations and street fighting.' }
+            ];
+            
+            infantryTypes.forEach(it => {
+                html += `
+                    <div class="unit-selector" onclick="selectInfantryType('${it.id}', ${it.cost}, '${it.name}')">
+                        <div class="unit-selector-name">${it.name}</div>
+                        <div class="unit-selector-cost">Base Cost: ${it.cost} points</div>
+                        <div class="unit-selector-notes">${it.desc}</div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('modalContent').innerHTML = html;
+            document.getElementById('unitModal').style.display = 'block';
+        }
+
+        function selectInfantryType(id, cost, name) {
+            currentUnit.subtype = 'troops';
+            currentUnit.infantryType = id;
+            currentUnit.name = name;
+            currentUnit.baseCost = cost;
+            
+            // Configure based on infantry type
+            if (id === 'infantry') {
+                // Infantry squad (4 soldiers + 1 sergeant)
+                currentUnit.baseWeapons = ['Military rifles (squad)', '1 light machine gun', 'Frag grenades (squad)'];
+                
+                currentUnit.weaponOptions = [
+                    { id: 'replace_lmg_hyper', name: 'Replace LMG with hyper blaster', cost: 4 },
+                    { id: 'replace_lmg_fury', name: 'Replace LMG with fury rifle', cost: 5 },
+                    { id: 'replace_lmg_grenade', name: 'Replace LMG with grenade launcher (frag & fog)', cost: 2 },
+                    { id: 'replace_lmg_plasma', name: 'Replace LMG with plasma rifle', cost: -2 },
+                    { id: 'sergeant_shotgun', name: 'Sergeant: Replace weapon with shotgun & service pistol', cost: 0 }
+                ];
+                
+                currentUnit.upgradeOptions = [
+                    { id: 'infantry_lasers', name: 'Replace all rifles with infantry lasers', cost: 4 },
+                    { id: 'fog_grenades', name: 'Add fog grenades to entire squad', cost: 5 }
+                ];
+                
+                currentUnit.addonOptions = [
+                    { id: 'mechanized', name: 'Mechanized Infantry (requires transport vehicle)', cost: 0 }
+                ];
+            } else if (id === 'recon') {
+                // Recon squad (4 soldiers + 1 sergeant)
+                currentUnit.baseWeapons = ['Military rifles (squad)', '1 precision rifle', '+1 to all Observation distances'];
+                
+                currentUnit.weaponOptions = [
+                    { id: 'add_precision', name: 'Add precision rifle to one soldier', cost: 3 }
+                ];
+                
+                currentUnit.upgradeOptions = [
+                    { id: 'infantry_lasers', name: 'Replace all military rifles with infantry lasers', cost: 4 },
+                    { id: 'service_pistols', name: 'Add service pistols to entire squad', cost: 5 }
+                ];
+                
+                currentUnit.addonOptions = [
+                    { id: 'mechanized', name: 'Mechanized Infantry (requires transport vehicle)', cost: 0 }
+                ];
+            } else if (id === 'storm') {
+                // Storm squad (4 soldiers + 1 sergeant)
+                currentUnit.baseWeapons = ['Shotguns & blades (squad)', '1 breaching axe', 'Frag & fog grenades (squad)'];
+                
+                currentUnit.weaponOptions = [
+                    { id: 'sergeant_glare', name: 'Sergeant: Add glare sword', cost: 1 },
+                    { id: 'sergeant_claw', name: 'Sergeant: Add powered claw', cost: 2 },
+                    { id: 'soldier_flak_1', name: 'Soldier 1: Replace with flak gun', cost: 3 },
+                    { id: 'soldier_flak_2', name: 'Soldier 2: Replace with flak gun', cost: 3 },
+                    { id: 'soldier_flame_1', name: 'Soldier 1: Replace with flame projector', cost: 4 },
+                    { id: 'soldier_flame_2', name: 'Soldier 2: Replace with flame projector', cost: 4 },
+                    { id: 'soldier_fusion_1', name: 'Soldier 1: Replace with fusion rifle', cost: 8 },
+                    { id: 'soldier_fusion_2', name: 'Soldier 2: Replace with fusion rifle', cost: 8 }
+                ];
+                
+                currentUnit.upgradeOptions = [
+                    { id: 'blasters', name: 'Replace all shotguns with blasters', cost: 5 },
+                    { id: 'penetrator_grenades', name: 'Add penetrator grenades to entire squad', cost: 10 }
+                ];
+                
+                currentUnit.addonOptions = [
+                    { id: 'mechanized', name: 'Mechanized Infantry (requires transport vehicle)', cost: 0 }
+                ];
+            }
+            
+            showUnitConfiguration();
+        }
+
+        function showSupportTypeSelection() {
+            let html = `
+                <div class="step-indicator"><div class="step-indicator-title">Step 1: Select Support Type</div></div>
+                <h2 class="section-title">Support Type</h2>
+                <p style="margin-bottom: 20px; opacity: 0.9;">Support units (0-4 per platoon)</p>
+                
+                <h3 style="color: #c73e1d; margin: 20px 0 10px 0;">Weapon Teams</h3>
+                <div class="unit-selector" onclick="selectSupportType('weapon_team')">
+                    <div class="unit-selector-name">Weapon Team</div>
+                    <div class="unit-selector-cost">Base Cost: 5 points</div>
+                    <div class="unit-selector-notes">3 soldiers manning a Crewed weapon. +1 Morale bonus. Each carries service pistol.</div>
+                </div>
+                
+                <h3 style="color: #c73e1d; margin: 20px 0 10px 0;">Specialists</h3>
+                <div class="unit-selector" onclick="selectSupportType('tech')">
+                    <div class="unit-selector-name">Tech</div>
+                    <div class="unit-selector-cost">Base Cost: 5 points</div>
+                    <div class="unit-selector-notes">1 soldier with service pistol. +1 dice bonus to hacking, repairs, construction, engineering.</div>
+                </div>
+                
+                <div class="unit-selector" onclick="selectSupportType('sharpshooter')">
+                    <div class="unit-selector-name">Sharpshooter</div>
+                    <div class="unit-selector-cost">Base Cost: 15 points</div>
+                    <div class="unit-selector-notes">1 soldier with sniper rifle & service pistol. +1 to all Shooting Hit rolls.</div>
+                </div>
+                
+                <div class="unit-selector" onclick="selectSupportType('fire_section')">
+                    <div class="unit-selector-name">Fire Section</div>
+                    <div class="unit-selector-cost">Base Cost: 15 points</div>
+                    <div class="unit-selector-notes">2-figure squad with service pistols. 1 plasma rifle. +1 Morale bonus.</div>
+                </div>
+                
+                <div class="unit-selector" onclick="selectSupportType('comms')">
+                    <div class="unit-selector-name">Comms</div>
+                    <div class="unit-selector-cost">Base Cost: 10 points</div>
+                    <div class="unit-selector-notes">1 soldier with service pistol. +1 to communications/jamming. +1 calling for support.</div>
+                </div>
+                
+                <div class="unit-selector" onclick="selectSupportType('medic')">
+                    <div class="unit-selector-name">Medic</div>
+                    <div class="unit-selector-cost">Base Cost: 10 points</div>
+                    <div class="unit-selector-notes">1 soldier with service pistol. Remove 1 Suppression from friendly unit within 6" per activation.</div>
+                </div>
+                
+                <div class="unit-selector" onclick="selectSupportType('scout')">
+                    <div class="unit-selector-name">Scout</div>
+                    <div class="unit-selector-cost">Base Cost: 10 points</div>
+                    <div class="unit-selector-notes">1 soldier with infantry laser. Speed +1". +2 to all Observation distances.</div>
+                </div>
+                
+                <h3 style="color: #c73e1d; margin: 20px 0 10px 0;">Vehicles</h3>
+                <div class="unit-selector" onclick="currentUnit.supportType='vehicle';showVehicleSelection();">
+                    <div class="unit-selector-name">Support Vehicles</div>
+                    <div class="unit-selector-notes">Add vehicles from the vehicle list as support units</div>
+                </div>
+            `;
+            
+            document.getElementById('modalContent').innerHTML = html;
+            document.getElementById('unitModal').style.display = 'block';
+        }
+
+        function selectSupportType(id) {
+            currentUnit.subtype = 'support';
+            currentUnit.supportType = id;
+            
+            if (id === 'weapon_team') {
+                currentUnit.name = 'Weapon Team';
+                currentUnit.baseCost = 5;
+                currentUnit.baseWeapons = ['Service pistols (3 soldiers)', '+1 Morale bonus'];
+                
+                currentUnit.weaponOptions = [
+                    { id: 'laser_cannon', name: 'Laser cannon (35 points)', cost: 35 },
+                    { id: '20mm_autocannon', name: '20mm autocannon (20 points)', cost: 20 },
+                    { id: 'infantry_mortar', name: 'Infantry mortar (15 points)', cost: 15 }
+                ];
+                
+                currentUnit.upgradeOptions = [];
+                currentUnit.addonOptions = [];
+                
+            } else if (id === 'tech') {
+                currentUnit.name = 'Tech';
+                currentUnit.baseCost = 5;
+                currentUnit.baseWeapons = ['Service pistol', '+1 dice to hacking/repairs/construction/engineering'];
+                
+                currentUnit.weaponOptions = [
+                    { id: 'hand_laser', name: 'Replace pistol with hand laser', cost: 1 }
+                ];
+                
+                currentUnit.upgradeOptions = [];
+                
+                currentUnit.addonOptions = [
+                    { id: 'jinx_grenades', name: 'Jinx grenades', cost: 3 },
+                    { id: 'attachment', name: 'Can attach to any squad during deployment', cost: 0 }
+                ];
+                
+            } else if (id === 'sharpshooter') {
+                currentUnit.name = 'Sharpshooter';
+                currentUnit.baseCost = 15;
+                currentUnit.baseWeapons = ['Sniper rifle', 'Service pistol', '+1 to all Shooting Hit rolls'];
+                
+                currentUnit.weaponOptions = [];
+                currentUnit.upgradeOptions = [];
+                currentUnit.addonOptions = [];
+                
+            } else if (id === 'fire_section') {
+                currentUnit.name = 'Fire Section';
+                currentUnit.baseCost = 15;
+                currentUnit.baseWeapons = ['Service pistols (2 soldiers)', '1 plasma rifle', '+1 Morale bonus'];
+                
+                currentUnit.weaponOptions = [
+                    { id: 'replace_lmg', name: 'Replace plasma rifle with light machine gun', cost: 2 },
+                    { id: 'replace_grenade', name: 'Replace plasma rifle with grenade launcher (frag, fog)', cost: 4 },
+                    { id: 'replace_fury', name: 'Replace plasma rifle with fury rifle', cost: 7 },
+                    { id: 'replace_hyper', name: 'Replace plasma rifle with hyper blaster', cost: 6 }
+                ];
+                
+                currentUnit.upgradeOptions = [];
+                
+                currentUnit.addonOptions = [
+                    { id: 'attachment', name: 'Can attach to any squad during deployment', cost: 0 }
+                ];
+                
+            } else if (id === 'comms') {
+                currentUnit.name = 'Comms';
+                currentUnit.baseCost = 10;
+                currentUnit.baseWeapons = ['Service pistol', '+1 to communications/jamming rolls', '+1 when calling for support'];
+                
+                currentUnit.weaponOptions = [];
+                currentUnit.upgradeOptions = [];
+                currentUnit.addonOptions = [];
+                
+            } else if (id === 'medic') {
+                currentUnit.name = 'Medic';
+                currentUnit.baseCost = 10;
+                currentUnit.baseWeapons = ['Service pistol', 'Remove 1 Suppression from friendly within 6" per activation'];
+                
+                currentUnit.weaponOptions = [];
+                currentUnit.upgradeOptions = [];
+                currentUnit.addonOptions = [];
+                
+            } else if (id === 'scout') {
+                currentUnit.name = 'Scout';
+                currentUnit.baseCost = 10;
+                currentUnit.baseWeapons = ['Infantry laser', 'Speed +1"', '+2 to all Observation distances'];
+                
+                currentUnit.weaponOptions = [];
+                currentUnit.upgradeOptions = [];
+                currentUnit.addonOptions = [];
+            }
+            
+            showUnitConfiguration();
+        }
+
+        function showUnitConfiguration() {
+            let html = `<div class="step-indicator"><div class="step-indicator-title">Step 2: Configure Unit</div></div>`;
+            html += `<h2 class="section-title">${editMode ? 'Edit' : 'Configure'} ${currentUnit.name}</h2>`;
+            
+            // Show current stats
+            if (currentUnit.type === 'vehicle') {
+                html += `
+                    <div class="option-group">
+                        <div class="option-title" style="cursor: default;">Unit Stats</div>
+                        <div class="option-content" style="background: #d0d0d0; color: #000; padding: 15px; border-radius: 6px; margin-top: 10px;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px;">
+                                <div><strong>Speed:</strong> ${currentUnit.speed}</div>
+                                <div><strong>Touchiness:</strong> ${currentUnit.touchiness}</div>
+                                <div><strong>KP:</strong> ${currentUnit.kp}</div>
+                                <div><strong>Crew:</strong> ${currentUnit.crew}</div>
+                                <div><strong>Capacity:</strong> ${currentUnit.capacity}</div>
+                            </div>
+                            ${currentUnit.baseWeapons.length > 0 ? `<div style="margin-top: 10px;"><strong>Base Weapons:</strong> ${currentUnit.baseWeapons.join(', ')}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Name input
+            html += `
+                <div class="form-group">
+                    <label>Unit Name (Optional)</label>
+                    <input type="text" id="unitCustomName" placeholder="e.g., Alpha Squad" value="${currentUnit.customName || ''}">
+                </div>
+            `;
+            
+            // Weapon options - Collapsible
+            if (currentUnit.weaponOptions && currentUnit.weaponOptions.length > 0) {
+                html += `
+                    <div class="option-group">
+                        <div class="option-title" onclick="toggleCollapse(this)">Weapon Options</div>
+                        <div class="option-content">
+                            ${currentUnit.weaponOptions.map((w, i) => `
+                                <div class="checkbox-option ${currentUnit.selectedWeapons.includes(i) ? 'selected' : ''}" onclick="toggleSelection('weapon', ${i})">
+                                    <span class="checkbox-option-name">${w.name}</span>
+                                    <span class="checkbox-option-cost">${w.cost > 0 ? '+' : ''}${w.cost} pts</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Unit Upgrades - Collapsible (placeholder for now)
+            if (currentUnit.upgradeOptions && currentUnit.upgradeOptions.length > 0) {
+                html += `
+                    <div class="option-group">
+                        <div class="option-title" onclick="toggleCollapse(this)">Unit Upgrades</div>
+                        <div class="option-content">
+                            ${currentUnit.upgradeOptions.map((u, i) => `
+                                <div class="checkbox-option ${(currentUnit.selectedUpgrades || []).includes(i) ? 'selected' : ''}" onclick="toggleSelection('upgrade', ${i})">
+                                    <span class="checkbox-option-name">${u.name}</span>
+                                    <span class="checkbox-option-cost">${u.cost > 0 ? '+' : ''}${u.cost} pts</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Unit Addons - Collapsible (placeholder for now)
+            if (currentUnit.addonOptions && currentUnit.addonOptions.length > 0) {
+                html += `
+                    <div class="option-group">
+                        <div class="option-title" onclick="toggleCollapse(this)">Unit Add-ons</div>
+                        <div class="option-content">
+                            ${currentUnit.addonOptions.map((a, i) => `
+                                <div class="checkbox-option ${(currentUnit.selectedAddons || []).includes(i) ? 'selected' : ''}" onclick="toggleSelection('addon', ${i})">
+                                    <span class="checkbox-option-name">${a.name}</span>
+                                    <span class="checkbox-option-cost">${a.cost > 0 ? '+' : ''}${a.cost} pts</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Veteran upgrades - Collapsible
+            html += `
+                <div class="option-group">
+                    <div class="option-title" onclick="toggleCollapse(this)">Veteran Skills (Optional)</div>
+                    <div class="option-content">
+                        <p style="font-size: 0.9em; opacity: 0.8; margin-bottom: 10px;">Each skill adds +1 to Morale tests (cumulative with Motivator)</p>
+                        ${veteranSkills.map((s, i) => `
+                            <div class="checkbox-option ${currentUnit.veteranSkills.includes(i) ? 'selected' : ''}" onclick="toggleSelection('veteran', ${i})">
+                                <div>
+                                    <div class="checkbox-option-name">${s.name}</div>
+                                    <div style="font-size: 0.85em; opacity: 0.8; margin-top: 3px;">${s.desc}</div>
+                                </div>
+                                <span class="checkbox-option-cost">+${s.cost} pts</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            // Total cost
+            const totalCost = calculateUnitCost();
+            html += `
+                <div style="margin-top: 20px; padding: 20px; background: rgba(199, 62, 29, 0.2); border-radius: 8px; text-align: center;">
+                    <strong style="font-size: 1.3em;">Total Cost: ${totalCost} points</strong>
+                </div>
+                <button onclick="saveUnit()" style="margin-top: 15px; width: 100%;">${editMode ? 'Save Changes' : 'Add to Army'}</button>
+            `;
+            
+            document.getElementById('modalContent').innerHTML = html;
+            document.getElementById('unitModal').style.display = 'block';
+        }
+
+        function toggleCollapse(element) {
+            element.classList.toggle('collapsed');
+            const content = element.nextElementSibling;
+            content.classList.toggle('collapsed');
+        }
+
+        function toggleSelection(type, index) {
+            if (type === 'weapon') {
+                const idx = currentUnit.selectedWeapons.indexOf(index);
+                if (idx > -1) currentUnit.selectedWeapons.splice(idx, 1);
+                else currentUnit.selectedWeapons.push(index);
+            } else if (type === 'upgrade') {
+                if (!currentUnit.selectedUpgrades) currentUnit.selectedUpgrades = [];
+                const idx = currentUnit.selectedUpgrades.indexOf(index);
+                if (idx > -1) currentUnit.selectedUpgrades.splice(idx, 1);
+                else currentUnit.selectedUpgrades.push(index);
+            } else if (type === 'addon') {
+                if (!currentUnit.selectedAddons) currentUnit.selectedAddons = [];
+                const idx = currentUnit.selectedAddons.indexOf(index);
+                if (idx > -1) currentUnit.selectedAddons.splice(idx, 1);
+                else currentUnit.selectedAddons.push(index);
+            } else if (type === 'veteran') {
+                const idx = currentUnit.veteranSkills.indexOf(index);
+                if (idx > -1) currentUnit.veteranSkills.splice(idx, 1);
+                else currentUnit.veteranSkills.push(index);
+            }
+            showUnitConfiguration(); // Refresh to update total
+        }
+
+        function calculateUnitCost() {
+            let total = currentUnit.baseCost || 0;
+            
+            if (currentUnit.weaponOptions) {
+                currentUnit.selectedWeapons.forEach(i => {
+                    total += currentUnit.weaponOptions[i].cost;
                 });
             }
+            
+            if (currentUnit.upgradeOptions && currentUnit.selectedUpgrades) {
+                currentUnit.selectedUpgrades.forEach(i => {
+                    total += currentUnit.upgradeOptions[i].cost;
+                });
+            }
+            
+            if (currentUnit.addonOptions && currentUnit.selectedAddons) {
+                currentUnit.selectedAddons.forEach(i => {
+                    total += currentUnit.addonOptions[i].cost;
+                });
+            }
+            
+            currentUnit.veteranSkills.forEach(i => {
+                total += veteranSkills[i].cost;
+            });
+            
+            return total;
+        }
 
-            // Info Text
-            doc.setFontSize(9); doc.setFont(undefined, 'normal');
-            let wpnTxt = "";
-            if (tmpl.type === "Vehicle" || tmpl.teamWpn) {
-                for (let hp in u.hardpoints) {
-                    if (u.hardpoints[hp] !== "None") wpnTxt += `${hp}: ${u.hardpoints[hp]} | `;
+        function saveUnit() {
+            const customName = document.getElementById('unitCustomName').value;
+            if (customName) currentUnit.customName = customName;
+            
+            currentUnit.cost = calculateUnitCost();
+            
+            // Build weapons list
+            currentUnit.weapons = [...(currentUnit.baseWeapons || [])];
+            if (currentUnit.weaponOptions) {
+                currentUnit.selectedWeapons.forEach(i => {
+                    currentUnit.weapons.push(currentUnit.weaponOptions[i].name);
+                });
+            }
+            
+            // Build upgrades list
+            currentUnit.upgrades = [];
+            if (currentUnit.upgradeOptions && currentUnit.selectedUpgrades) {
+                currentUnit.selectedUpgrades.forEach(i => {
+                    currentUnit.upgrades.push(currentUnit.upgradeOptions[i].name);
+                });
+            }
+            
+            // Build addons list
+            currentUnit.addons = [];
+            if (currentUnit.addonOptions && currentUnit.selectedAddons) {
+                currentUnit.selectedAddons.forEach(i => {
+                    currentUnit.addons.push(currentUnit.addonOptions[i].name);
+                });
+            }
+            
+            // Build veteran skills list
+            currentUnit.veteranSkillsList = currentUnit.veteranSkills.map(i => veteranSkills[i]);
+            
+            if (editMode) {
+                // Update existing unit
+                const index = army.findIndex(u => u.id === currentUnit.id);
+                if (index > -1) army[index] = currentUnit;
+            } else {
+                // Add new unit
+                currentUnit.id = Date.now();
+                army.push(currentUnit);
+            }
+            
+            updateArmyDisplay();
+            validateArmy();
+            closeUnitModal();
+            showNotification(editMode ? 'Unit updated!' : 'Unit added to army!');
+        }
+
+        function editUnit(id) {
+            currentUnit = JSON.parse(JSON.stringify(army.find(u => u.id === id)));
+            editMode = true;
+            showUnitConfiguration();
+        }
+
+        function removeUnit(id) {
+            if (confirm('Remove this unit?')) {
+                army = army.filter(u => u.id !== id);
+                updateArmyDisplay();
+                validateArmy();
+                showNotification('Unit removed');
+            }
+        }
+
+        function validateArmy() {
+            const s = document.getElementById('validationStatus');
+            const tp = army.reduce((sum, u) => sum + u.cost, 0);
+            const pl = parseInt(document.getElementById('pointLimit').value) || 500;
+            const l = army.filter(u => u.subtype === 'leader').length;
+            const tr = army.filter(u => u.subtype === 'troops').length;
+            const su = army.filter(u => u.subtype === 'support').length;
+            const m = [];
+            let v = true;
+            
+            if (tp > pl) { m.push(`⚠️ Exceeds limit (${tp}/${pl})`); v = false; }
+            if (l > 1) { m.push(`⚠️ Too many Leaders (${l}/1)`); v = false; }
+            if (tr < 1 && (l > 0 || su > 0)) { m.push(`⚠️ Need ≥1 Troops`); v = false; }
+            if (su > 4) { m.push(`⚠️ Too many Support (${su}/4)`); v = false; }
+            
+            if (army.length === 0) { s.innerHTML = ''; return; }
+            
+            if (v) {
+                s.className = 'validation-status valid';
+                s.innerHTML = `✅ Army is LEGAL<div class="validation-messages">${tp}/${pl} pts | Leaders: ${l}/1 | Troops: ${tr} | Support: ${su}/4</div>`;
+            } else {
+                s.className = 'validation-status invalid';
+                s.innerHTML = `❌ Army is NOT LEGAL<div class="validation-messages">${m.join('<br>')}</div>`;
+            }
+        }
+
+        function updateArmyDisplay() {
+            const c = document.getElementById('armyList');
+            const tp = army.reduce((sum, u) => sum + u.cost, 0);
+            const uc = army.length;
+            
+            document.getElementById('totalPoints').textContent = tp;
+            document.getElementById('unitCount').textContent = uc;
+            
+            if (army.length === 0) {
+                c.innerHTML = '<p style="opacity: 0.6; text-align: center; padding: 40px;">Your army is empty. Add units!</p>';
+                return;
+            }
+            
+            c.innerHTML = army.map(u => {
+                let d = '<div class="army-unit-details">';
+                
+                if (u.type === 'vehicle') {
+                    d += `<div class="army-unit-section"><div class="army-unit-section-title">Stats</div>Speed: ${u.speed} | T: ${u.touchiness} | KP: ${u.kp} | Crew: ${u.crew} | Capacity: ${u.capacity}</div>`;
+                    if (u.weapons && u.weapons.length > 0) {
+                        d += `<div class="army-unit-section"><div class="army-unit-section-title">Weapons</div>${u.weapons.join('<br>')}</div>`;
+                    }
+                    if (u.upgrades && u.upgrades.length > 0) {
+                        d += `<div class="army-unit-section"><div class="army-unit-section-title">Upgrades</div>${u.upgrades.join('<br>')}</div>`;
+                    }
+                    if (u.addons && u.addons.length > 0) {
+                        d += `<div class="army-unit-section"><div class="army-unit-section-title">Add-ons</div>${u.addons.join('<br>')}</div>`;
+                    }
+                } else if (u.type === 'leader') {
+                    d += `<div class="army-unit-section"><div class="army-unit-section-title">Type</div>Leader - ${u.leaderType}</div>`;
+                } else if (u.type === 'infantry') {
+                    d += `<div class="army-unit-section"><div class="army-unit-section-title">Type</div>Infantry - ${u.infantryType} (4 figures)</div>`;
+                    if (u.weapons && u.weapons.length > 0) {
+                        d += `<div class="army-unit-section"><div class="army-unit-section-title">Weapons</div>${u.weapons.join('<br>')}</div>`;
+                    }
+                    if (u.upgrades && u.upgrades.length > 0) {
+                        d += `<div class="army-unit-section"><div class="army-unit-section-title">Upgrades</div>${u.upgrades.join('<br>')}</div>`;
+                    }
+                } else if (u.type === 'support') {
+                    d += `<div class="army-unit-section"><div class="army-unit-section-title">Type</div>Support - ${u.supportType}</div>`;
                 }
-            } else {
-                wpnTxt = `Main: ${tmpl.wpn}`;
-                if (u.specialWeapon && u.specialWeapon !== "None") wpnTxt += ` | Spec: ${u.specialWeapon}`;
+                
+                if (u.veteranSkillsList && u.veteranSkillsList.length > 0) {
+                    d += `<div class="army-unit-section"><div class="army-unit-section-title">Veteran Skills</div>${u.veteranSkillsList.map(s => `${s.name}: ${s.desc}`).join('<br>')}</div>`;
+                }
+                
+                if (u.notes) {
+                    d += `<div class="army-unit-section"><div class="army-unit-section-title">Notes</div>${u.notes}</div>`;
+                }
+                
+                d += '</div>';
+                
+                return `
+                    <div class="army-unit">
+                        <div class="army-unit-header">
+                            <div class="army-unit-name">${u.customName || u.name}</div>
+                            <div class="army-unit-cost">${u.cost} pts</div>
+                        </div>
+                        ${d}
+                        <div class="army-unit-actions">
+                            <button onclick="editUnit(${u.id})" class="btn-secondary btn-small">Edit</button>
+                            <button onclick="removeUnit(${u.id})" class="btn-danger btn-small">Remove</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function printStatCards() {
+            const p = document.getElementById('printArea');
+            p.innerHTML = '';
+            
+            if (armyName) {
+                const h = document.createElement('div');
+                h.style.textAlign = 'center';
+                h.style.padding = '20px';
+                h.innerHTML = `<h1 style="color: #c73e1d;">${armyName}</h1>`;
+                p.appendChild(h);
             }
+            
+            army.forEach(u => {
+                const c = document.createElement('div');
+                c.className = 'stat-card';
+                let h = `<div class="stat-card-header"><div class="stat-card-title">${u.customName || u.name}</div><div class="stat-card-type">${u.type}</div></div>`;
+                
+                if (u.type === 'vehicle') {
+                    h += `<div class="stat-card-stats"><div class="stat-card-stat"><div class="stat-card-stat-label">Speed</div><div class="stat-card-stat-value">${u.speed}</div></div><div class="stat-card-stat"><div class="stat-card-stat-label">Touchiness</div><div class="stat-card-stat-value">${u.touchiness}</div></div><div class="stat-card-stat"><div class="stat-card-stat-label">KP</div><div class="stat-card-stat-value">${u.kp}</div></div><div class="stat-card-stat"><div class="stat-card-stat-label">Crew</div><div class="stat-card-stat-value">${u.crew}</div></div><div class="stat-card-stat"><div class="stat-card-stat-label">Capacity</div><div class="stat-card-stat-value">${u.capacity}</div></div><div class="stat-card-stat"><div class="stat-card-stat-label">Points</div><div class="stat-card-stat-value">${u.cost}</div></div></div>`;
+                    if (u.weapons && u.weapons.length > 0) {
+                        h += `<div class="stat-card-section"><div class="stat-card-section-title">Weapons</div>${u.weapons.map(w => `<div class="stat-card-item">${w}</div>`).join('')}</div>`;
+                    }
+                    if (u.upgrades && u.upgrades.length > 0) {
+                        h += `<div class="stat-card-section"><div class="stat-card-section-title">Unit Upgrades</div>${u.upgrades.map(up => `<div class="stat-card-item">${up}</div>`).join('')}</div>`;
+                    }
+                    if (u.addons && u.addons.length > 0) {
+                        h += `<div class="stat-card-section"><div class="stat-card-section-title">Add-ons</div>${u.addons.map(ad => `<div class="stat-card-item">${ad}</div>`).join('')}</div>`;
+                    }
+                } else {
+                    h += `<div class="stat-card-section"><div class="stat-card-section-title">Details</div>Type: ${u.type}<br>Cost: ${u.cost} points</div>`;
+                }
+                
+                if (u.veteranSkillsList && u.veteranSkillsList.length > 0) {
+                    h += `<div class="stat-card-section" style="background: #fff8e1;"><div class="stat-card-section-title">Veteran Skills</div>${u.veteranSkillsList.map(s => `<div class="stat-card-item"><strong>${s.name}</strong><br><span style="font-size: 0.9em;">${s.desc}</span></div>`).join('')}</div>`;
+                }
+                
+                h += `<div class="stat-card-footer"><div>Base: ${u.baseCost} pts</div><div>Total: ${u.cost} pts</div></div>`;
+                c.innerHTML = h;
+                p.appendChild(c);
+            });
+            
+            window.print();
+        }
 
-            let gearTxt = u.upgrades.join(", ");
-            let notes = [];
-            if (u.veteran !== "None") notes.push(`Vet: ${u.veteran}`);
-            if (u.attachment !== "None") notes.push(`Att: ${u.attachment}`);
+        function exportAsText() {
+            let t = '=== FIVE PARSECS FROM HOME: TACTICS ===\n\n';
+            if (armyName) t += `Army: ${armyName}\n\n`;
+            t += `Total: ${army.reduce((s, u) => s + u.cost, 0)} points\nUnits: ${army.length}\n\n`;
+            army.forEach((u, i) => {
+                t += `${i + 1}. ${u.customName || u.name} (${u.type}) - ${u.cost} pts\n`;
+                if (u.weapons && u.weapons.length > 0) t += `   Weapons: ${u.weapons.join(', ')}\n`;
+                if (u.veteranSkillsList && u.veteranSkillsList.length > 0) t += `   Veterans: ${u.veteranSkillsList.map(s => s.name).join(', ')}\n`;
+                t += '\n';
+            });
+            const b = new Blob([t], { type: 'text/plain' });
+            const url = URL.createObjectURL(b);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = (armyName || 'army') + '.txt';
+            a.click();
+            showNotification('Exported!');
+        }
 
-            doc.text(`GEAR: ${wpnTxt}`, 25, y+32);
-            if (gearTxt) doc.text(`UPGRADES: ${gearTxt}`, 25, y+38);
-            if (notes.length) doc.text(`NOTES: ${notes.join(" | ")}`, 25, y+44);
+        function exportAsJSON() {
+            const d = { game: 'Five Parsecs from Home: Tactics', armyName: armyName, totalPoints: army.reduce((s, u) => s + u.cost, 0), pointLimit: parseInt(document.getElementById('pointLimit').value), units: army };
+            const b = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(b);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = (armyName || 'army') + '.json';
+            a.click();
+            showNotification('Exported!');
+        }
 
-            y += 55;
-        });
+        function importJSON() {
+            const inp = document.createElement('input');
+            inp.type = 'file';
+            inp.accept = '.json';
+            inp.onchange = (e) => {
+                const f = e.target.files[0];
+                const r = new FileReader();
+                r.onload = (ev) => {
+                    try {
+                        const d = JSON.parse(ev.target.result);
+                        if (d.armyName) { armyName = d.armyName; document.getElementById('armyName').value = armyName; }
+                        if (d.pointLimit) document.getElementById('pointLimit').value = d.pointLimit;
+                        if (d.units) { army = d.units; updateArmyDisplay(); validateArmy(); showNotification('Imported!'); }
+                    } catch (err) { showNotification('Error: ' + err.message); }
+                };
+                r.readAsText(f);
+            };
+            inp.click();
+        }
 
-        doc.save(armyName.replace(/ /g, "_") + ".pdf");
-    }
-</script>
+        function clearArmy() {
+            if (confirm('Clear army?')) {
+                army = [];
+                updateArmyDisplay();
+                validateArmy();
+                showNotification('Cleared');
+            }
+        }
+
+        function closeUnitModal() {
+            document.getElementById('unitModal').style.display = 'none';
+            currentUnit = null;
+            editMode = false;
+        }
+
+        function showNotification(m) {
+            const n = document.getElementById('notification');
+            n.textContent = m;
+            n.classList.add('show');
+            setTimeout(() => { n.classList.remove('show'); }, 3000);
+        }
+
+        window.onclick = (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
+            }
+        };
+    </script>
 </body>
 </html>
