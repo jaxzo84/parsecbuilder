@@ -87,21 +87,208 @@
         @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .step-indicator { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         .step-indicator-title { font-size: 1.2em; color: #c73e1d; font-weight: bold; margin-bottom: 10px; }
-        .stat-card { background: white; color: #000; padding: 20px; margin: 20px; border: 3px solid #c73e1d; border-radius: 8px; width: 750px; page-break-inside: avoid; }
-        .stat-card-header { background: #c73e1d; color: white; padding: 15px; margin: -20px -20px 20px -20px; border-radius: 5px 5px 0 0; }
-        .stat-card-title { font-size: 1.8em; font-weight: bold; margin-bottom: 5px; }
-        .stat-card-type { font-size: 1em; opacity: 0.9; }
-        .stat-card-stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 20px; }
-        .stat-card-stat { text-align: center; padding: 10px; background: #f5f5f5; border-radius: 4px; border: 1px solid #ddd; }
-        .stat-card-stat-label { font-size: 0.8em; color: #666; margin-bottom: 5px; }
-        .stat-card-stat-value { font-size: 1.3em; font-weight: bold; color: #c73e1d; }
-        .stat-card-section { margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px; }
-        .stat-card-section-title { font-weight: bold; color: #c73e1d; margin-bottom: 10px; font-size: 1.1em; }
-        .stat-card-item { padding: 8px 0; border-bottom: 1px solid #eee; }
-        .stat-card-item:last-child { border-bottom: none; }
-        .stat-card-footer { margin-top: 20px; padding-top: 15px; border-top: 2px solid #c73e1d; display: flex; justify-content: space-between; font-weight: bold; }
-        .print-area { display: none; }
-        @media (max-width: 768px) { h1 { font-size: 1.8em; } .points-display { flex-direction: column; } .stat-card { width: 100%; margin: 10px 0; } }
+        .stat-card {
+            background: white;
+            color: #000;
+            width: 680px;
+            border: 2px solid #000;
+            border-radius: 10px;
+            font-family: Arial, Helvetica, sans-serif;
+            page-break-inside: avoid;
+            page-break-after: always;
+            margin: 15px auto;
+            overflow: hidden;
+        }
+        .sc-header {
+            display: flex;
+            align-items: center;
+            background: white;
+            border-bottom: 2px solid #000;
+            padding: 6px 10px;
+            gap: 10px;
+        }
+        .sc-header-arrow {
+            font-size: 1.2em;
+            color: #000;
+        }
+        .sc-header-label {
+            font-size: 0.85em;
+            font-weight: bold;
+            color: #000;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+        .sc-header-name {
+            flex: 1;
+            border-bottom: 2px solid #000;
+            min-width: 150px;
+            height: 22px;
+            font-size: 1em;
+            font-weight: bold;
+            padding: 0 4px;
+            display: flex;
+            align-items: flex-end;
+        }
+        .sc-body {
+            display: flex;
+            min-height: 200px;
+        }
+        .sc-left {
+            width: 130px;
+            flex-shrink: 0;
+            border-right: 2px solid #000;
+        }
+        .sc-points-box {
+            background: #000;
+            color: white;
+            text-align: center;
+            padding: 5px;
+            font-size: 0.7em;
+            font-weight: bold;
+            text-transform: uppercase;
+            line-height: 1.2;
+            border-bottom: 2px solid #000;
+        }
+        .sc-points-value {
+            background: white;
+            color: #000;
+            font-size: 1.3em;
+            font-weight: bold;
+            text-align: center;
+            padding: 4px;
+            border-bottom: 2px solid #000;
+        }
+        .sc-stat-row {
+            display: flex;
+            border-bottom: 1px solid #000;
+        }
+        .sc-stat-row:last-child {
+            border-bottom: none;
+        }
+        .sc-stat-label {
+            flex: 1;
+            padding: 5px 6px;
+            font-size: 0.78em;
+            font-weight: bold;
+            border-right: 1px solid #000;
+        }
+        .sc-stat-val {
+            width: 36px;
+            padding: 5px 4px;
+            font-size: 0.78em;
+            text-align: center;
+        }
+        .sc-right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .sc-weapons-header {
+            display: grid;
+            background: #000;
+            color: white;
+            font-size: 0.7em;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-align: center;
+            border-bottom: 2px solid #000;
+        }
+        .sc-infantry-weapons-header {
+            grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
+        }
+        .sc-vehicle-weapons-header {
+            grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
+        }
+        .sc-weapons-header div {
+            padding: 5px 3px;
+            border-right: 1px solid #555;
+        }
+        .sc-weapons-header div:last-child {
+            border-right: none;
+        }
+        .sc-weapons-row {
+            display: grid;
+            border-bottom: 1px solid #000;
+            min-height: 24px;
+        }
+        .sc-infantry-weapons-row {
+            grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
+        }
+        .sc-vehicle-weapons-row {
+            grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
+        }
+        .sc-weapons-row div {
+            padding: 4px 4px;
+            font-size: 0.75em;
+            border-right: 1px solid #000;
+            display: flex;
+            align-items: center;
+        }
+        .sc-weapons-row div:last-child {
+            border-right: none;
+        }
+        .sc-weapons-empty {
+            flex: 1;
+        }
+        .sc-bottom {
+            border-top: 2px solid #000;
+            display: flex;
+            flex-direction: column;
+        }
+        .sc-vet-label {
+            background: #000;
+            color: white;
+            font-size: 0.7em;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 4px 8px;
+            letter-spacing: 1px;
+        }
+        .sc-vet-content {
+            padding: 6px 8px;
+            font-size: 0.78em;
+            min-height: 40px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .sc-vet-skill {
+            background: #f0f0f0;
+            border: 1px solid #000;
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-size: 0.85em;
+        }
+        .sc-upgrades-section {
+            border-top: 1px solid #000;
+            padding: 6px 8px;
+            font-size: 0.78em;
+        }
+        .sc-upgrades-label {
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.75em;
+            margin-bottom: 3px;
+            letter-spacing: 0.5px;
+        }
+        @media print {
+            body > *:not(.print-area) { display: none !important; }
+            .print-area { display: block !important; }
+            .stat-card { 
+                page-break-inside: avoid; 
+                page-break-after: always;
+                margin: 10px auto;
+                width: 680px;
+            }
+            .sc-print-page {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 20px;
+                padding: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1239,45 +1426,261 @@
         function printStatCards() {
             const p = document.getElementById('printArea');
             p.innerHTML = '';
-            
+
+            // Inline print styles for maximum reliability
+            const style = document.createElement('style');
+            style.textContent = `
+                @media print {
+                    body > *:not(#printArea) { display: none !important; }
+                    #printArea { display: block !important; position: absolute; left:0; top:0; width:100%; }
+                }
+                .pc-page { font-family: Arial, Helvetica, sans-serif; background: white; padding: 8mm; }
+                .pc-army-title { text-align:center; font-size:18pt; font-weight:bold; margin-bottom:6mm; padding-bottom:3mm; border-bottom:2px solid #000; color:#000; }
+                /* ---- CARD SHELL ---- */
+                .pc-card { background:white; border:2px solid #000; border-radius:8px; width:170mm; margin:0 auto 8mm auto; overflow:hidden; page-break-inside:avoid; }
+                /* ---- HEADER BAR ---- */
+                .pc-header { display:flex; align-items:center; border-bottom:2px solid #000; padding:3mm 4mm; gap:3mm; background:white; }
+                .pc-header-arrow { font-size:14pt; color:#000; }
+                .pc-header-type { font-size:8pt; font-weight:bold; text-transform:uppercase; letter-spacing:1px; white-space:nowrap; color:#000; }
+                .pc-header-name { flex:1; border-bottom:2px solid #000; font-size:12pt; font-weight:bold; padding:0 2mm 1mm 2mm; color:#000; }
+                /* ---- BODY: left stats + right weapons ---- */
+                .pc-body { display:flex; }
+                /* LEFT column */
+                .pc-left { width:36mm; flex-shrink:0; border-right:2px solid #000; }
+                .pc-pts-label { background:#000; color:white; font-size:6.5pt; font-weight:bold; text-transform:uppercase; text-align:center; padding:2mm 1mm; line-height:1.2; }
+                .pc-pts-value { font-size:14pt; font-weight:bold; text-align:center; padding:2mm 1mm; border-bottom:2px solid #000; color:#000; }
+                .pc-stat-row { display:flex; border-bottom:1px solid #000; }
+                .pc-stat-row:last-child { border-bottom:none; }
+                .pc-stat-label { flex:1; font-size:7pt; font-weight:bold; padding:2.5mm 3mm; border-right:1px solid #000; color:#000; }
+                .pc-stat-val { width:11mm; font-size:7pt; text-align:center; padding:2.5mm 1mm; color:#000; }
+                /* RIGHT column */
+                .pc-right { flex:1; display:flex; flex-direction:column; }
+                .pc-wep-header { display:grid; background:#000; color:white; font-size:6.5pt; font-weight:bold; text-transform:uppercase; text-align:center; }
+                .pc-wep-header-inf  { grid-template-columns: 2.5fr 1fr 0.8fr 0.8fr 1.5fr; }
+                .pc-wep-header-veh  { grid-template-columns: 2.5fr 1fr 0.8fr 0.8fr 1.5fr; }
+                .pc-wep-header > div { padding:2.5mm 1mm; border-right:1px solid #555; }
+                .pc-wep-header > div:last-child { border-right:none; }
+                .pc-wep-row { display:grid; border-bottom:1px solid #000; min-height:7mm; }
+                .pc-wep-row-inf { grid-template-columns: 2.5fr 1fr 0.8fr 0.8fr 1.5fr; }
+                .pc-wep-row-veh { grid-template-columns: 2.5fr 1fr 0.8fr 0.8fr 1.5fr; }
+                .pc-wep-row > div { font-size:7pt; padding:2mm 2mm; border-right:1px solid #000; display:flex; align-items:center; color:#000; }
+                .pc-wep-row > div:last-child { border-right:none; }
+                .pc-wep-spacer { flex:1; }
+                /* BOTTOM: veteran skills */
+                .pc-bot { border-top:2px solid #000; }
+                .pc-vet-label { background:#000; color:white; font-size:7pt; font-weight:bold; text-transform:uppercase; letter-spacing:1px; padding:2mm 4mm; }
+                .pc-vet-content { padding:2.5mm 4mm; font-size:7pt; color:#000; min-height:10mm; display:flex; flex-wrap:wrap; gap:2mm; align-items:center; }
+                .pc-vet-skill { border:1px solid #000; border-radius:2px; padding:1mm 2mm; font-size:6.5pt; }
+                /* Extras */
+                .pc-extras { border-top:1px solid #000; padding:2mm 4mm; font-size:6.5pt; color:#000; }
+                .pc-extras-label { font-weight:bold; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:1mm; font-size:6pt; }
+            `;
+            p.appendChild(style);
+
+            const page = document.createElement('div');
+            page.className = 'pc-page';
+
             if (armyName) {
-                const h = document.createElement('div');
-                h.style.textAlign = 'center';
-                h.style.padding = '20px';
-                h.innerHTML = `<h1 style="color: #c73e1d;">${armyName}</h1>`;
-                p.appendChild(h);
+                const title = document.createElement('div');
+                title.className = 'pc-army-title';
+                title.textContent = armyName + ' — Army Roster';
+                page.appendChild(title);
             }
-            
+
             army.forEach(u => {
-                const c = document.createElement('div');
-                c.className = 'stat-card';
-                let h = `<div class="stat-card-header"><div class="stat-card-title">${u.customName || u.name}</div><div class="stat-card-type">${u.type}</div></div>`;
-                
-                if (u.type === 'vehicle') {
-                    h += `<div class="stat-card-stats"><div class="stat-card-stat"><div class="stat-card-stat-label">Speed</div><div class="stat-card-stat-value">${u.speed}</div></div><div class="stat-card-stat"><div class="stat-card-stat-label">Touchiness</div><div class="stat-card-stat-value">${u.touchiness}</div></div><div class="stat-card-stat"><div class="stat-card-stat-label">KP</div><div class="stat-card-stat-value">${u.kp}</div></div><div class="stat-card-stat"><div class="stat-card-stat-label">Crew</div><div class="stat-card-stat-value">${u.crew}</div></div><div class="stat-card-stat"><div class="stat-card-stat-label">Capacity</div><div class="stat-card-stat-value">${u.capacity}</div></div><div class="stat-card-stat"><div class="stat-card-stat-label">Points</div><div class="stat-card-stat-value">${u.cost}</div></div></div>`;
-                    if (u.weapons && u.weapons.length > 0) {
-                        h += `<div class="stat-card-section"><div class="stat-card-section-title">Weapons</div>${u.weapons.map(w => `<div class="stat-card-item">${w}</div>`).join('')}</div>`;
-                    }
-                    if (u.upgrades && u.upgrades.length > 0) {
-                        h += `<div class="stat-card-section"><div class="stat-card-section-title">Unit Upgrades</div>${u.upgrades.map(up => `<div class="stat-card-item">${up}</div>`).join('')}</div>`;
-                    }
-                    if (u.addons && u.addons.length > 0) {
-                        h += `<div class="stat-card-section"><div class="stat-card-section-title">Add-ons</div>${u.addons.map(ad => `<div class="stat-card-item">${ad}</div>`).join('')}</div>`;
-                    }
+                const isVehicle = u.type === 'vehicle';
+                const isLeader  = u.type === 'leader';
+                const isSupport = u.type === 'support';
+                const card = document.createElement('div');
+                card.className = 'pc-card';
+
+                const displayName = u.customName || u.name;
+                const typeLabel   = isVehicle ? 'Vehicle:' : isLeader ? 'Leader:' : isSupport ? 'Support:' : 'Infantry:';
+                const rowClass    = isVehicle ? 'pc-wep-row-veh' : 'pc-wep-row-inf';
+                const hdrClass    = isVehicle ? 'pc-wep-header-veh' : 'pc-wep-header-inf';
+                const traitsHdr   = isVehicle ? 'Traits/Arc' : 'Traits';
+
+                // ---- HEADER ----
+                card.innerHTML = `
+                    <div class="pc-header">
+                        <span class="pc-header-arrow">&#x21e6;</span>
+                        <span class="pc-header-type">${typeLabel}</span>
+                        <div class="pc-header-name">${displayName}</div>
+                        <span class="pc-header-arrow">&#x21e8;</span>
+                    </div>
+                `;
+
+                // ---- BODY ----
+                const body = document.createElement('div');
+                body.className = 'pc-body';
+
+                // LEFT — stats
+                const left = document.createElement('div');
+                left.className = 'pc-left';
+                left.innerHTML = `<div class="pc-pts-label">Points<br>Cost</div><div class="pc-pts-value">${u.cost}</div>`;
+
+                if (isVehicle) {
+                    [
+                        ['Speed',      u.speed || '—'],
+                        ['Toughness',  u.touchiness ?? '—'],
+                        ['Kill Points',u.kp ?? '—'],
+                        ['Capacity',   u.capacity ?? '—']
+                    ].forEach(([lbl, val]) => {
+                        left.innerHTML += `<div class="pc-stat-row"><div class="pc-stat-label">${lbl}</div><div class="pc-stat-val">${val}</div></div>`;
+                    });
                 } else {
-                    h += `<div class="stat-card-section"><div class="stat-card-section-title">Details</div>Type: ${u.type}<br>Cost: ${u.cost} points</div>`;
+                    [
+                        ['Speed',        '6"'],
+                        ['Reaction',     '1'],
+                        ['Combat Skill', '+0'],
+                        ['Toughness',    '3'],
+                        ['Kill Points',  '1'],
+                        ['Savvy',        '+0'],
+                        ['Training',     'Mil.']
+                    ].forEach(([lbl, val]) => {
+                        left.innerHTML += `<div class="pc-stat-row"><div class="pc-stat-label">${lbl}</div><div class="pc-stat-val">${val}</div></div>`;
+                    });
                 }
-                
-                if (u.veteranSkillsList && u.veteranSkillsList.length > 0) {
-                    h += `<div class="stat-card-section" style="background: #fff8e1;"><div class="stat-card-section-title">Veteran Skills</div>${u.veteranSkillsList.map(s => `<div class="stat-card-item"><strong>${s.name}</strong><br><span style="font-size: 0.9em;">${s.desc}</span></div>`).join('')}</div>`;
+                body.appendChild(left);
+
+                // RIGHT — weapons table
+                const right = document.createElement('div');
+                right.className = 'pc-right';
+                right.innerHTML = `
+                    <div class="pc-wep-header ${hdrClass}">
+                        <div>Weapons</div><div>Range</div><div>Shots</div><div>Damage</div><div>${traitsHdr}</div>
+                    </div>
+                `;
+
+                const weaponRows = buildWeaponRows(u);
+                const numRows = Math.max(4, weaponRows.length);
+                for (let i = 0; i < numRows; i++) {
+                    const w = weaponRows[i] || { name:'', range:'', shots:'', damage:'', traits:'' };
+                    right.innerHTML += `
+                        <div class="pc-wep-row ${rowClass}">
+                            <div>${w.name}</div>
+                            <div style="text-align:center">${w.range}</div>
+                            <div style="text-align:center">${w.shots}</div>
+                            <div style="text-align:center">${w.damage}</div>
+                            <div>${w.traits}</div>
+                        </div>
+                    `;
                 }
-                
-                h += `<div class="stat-card-footer"><div>Base: ${u.baseCost} pts</div><div>Total: ${u.cost} pts</div></div>`;
-                c.innerHTML = h;
-                p.appendChild(c);
+                right.innerHTML += `<div class="pc-wep-spacer"></div>`;
+                body.appendChild(right);
+                card.appendChild(body);
+
+                // ---- VETERAN SKILLS ----
+                const vetSkills = u.veteranSkillsList || [];
+                const bot = document.createElement('div');
+                bot.className = 'pc-bot';
+                bot.innerHTML = `<div class="pc-vet-label">Veteran Skills</div>`;
+                const vetContent = document.createElement('div');
+                vetContent.className = 'pc-vet-content';
+                if (vetSkills.length > 0) {
+                    vetSkills.forEach(s => {
+                        vetContent.innerHTML += `<span class="pc-vet-skill"><strong>${s.name}:</strong> ${s.desc}</span>`;
+                    });
+                } else {
+                    vetContent.innerHTML = `<span style="color:#999;font-style:italic">None</span>`;
+                }
+                bot.appendChild(vetContent);
+                card.appendChild(bot);
+
+                // ---- EXTRAS (upgrades + addons) ----
+                const allExtras = [
+                    ...(u.upgrades || []).map(x => `Upgrade: ${x}`),
+                    ...(u.addons   || []).map(x => `Add-on: ${x}`)
+                ];
+                if (allExtras.length > 0) {
+                    const ext = document.createElement('div');
+                    ext.className = 'pc-extras';
+                    ext.innerHTML = `<div class="pc-extras-label">Upgrades &amp; Add-ons</div>${allExtras.join(' &nbsp;|&nbsp; ')}`;
+                    card.appendChild(ext);
+                }
+
+                page.appendChild(card);
             });
-            
+
+            p.appendChild(page);
             window.print();
+        }
+
+        // Map weapons to stat rows for the weapons table
+        function buildWeaponRows(u) {
+            const wp = {
+                'military rifles (squad)':          { range:'24"', shots:'1',  damage:'0', traits:'Auto' },
+                'military rifles':                   { range:'24"', shots:'1',  damage:'0', traits:'Auto' },
+                'infantry lasers':                   { range:'24"', shots:'1',  damage:'0', traits:'Auto, Laser' },
+                '1 light machine gun':               { range:'24"', shots:'2',  damage:'0', traits:'Area' },
+                'light machine gun':                 { range:'24"', shots:'2',  damage:'0', traits:'Area' },
+                'front: lmg':                        { range:'24"', shots:'2',  damage:'0', traits:'Forward' },
+                'coaxial: lmg':                      { range:'24"', shots:'2',  damage:'0', traits:'Coaxial' },
+                'arm: lmg':                          { range:'24"', shots:'2',  damage:'0', traits:'' },
+                'lmg':                               { range:'24"', shots:'2',  damage:'0', traits:'Area' },
+                '1 arm with lmg':                    { range:'24"', shots:'2',  damage:'0', traits:'' },
+                'forward-firing light machine gun':  { range:'24"', shots:'2',  damage:'0', traits:'Forward' },
+                '1 precision rifle':                 { range:'30"', shots:'1',  damage:'1', traits:'Aim' },
+                'precision rifle':                   { range:'30"', shots:'1',  damage:'1', traits:'Aim' },
+                'shotguns & blades (squad)':         { range:'8"',  shots:'2',  damage:'0', traits:'Close, Blade' },
+                'shotgun':                           { range:'8"',  shots:'2',  damage:'0', traits:'Close' },
+                'blasters':                          { range:'16"', shots:'1',  damage:'1', traits:'' },
+                'blaster':                           { range:'16"', shots:'1',  damage:'1', traits:'' },
+                'service pistol':                    { range:'8"',  shots:'1',  damage:'0', traits:'' },
+                'service pistols (3 soldiers)':      { range:'8"',  shots:'1',  damage:'0', traits:'' },
+                'hand laser':                        { range:'10"', shots:'1',  damage:'0', traits:'Laser' },
+                'infantry laser':                    { range:'24"', shots:'1',  damage:'0', traits:'Laser' },
+                'sniper rifle':                      { range:'36"', shots:'1',  damage:'2', traits:'Aim, AP1' },
+                'plasma rifle':                      { range:'24"', shots:'1',  damage:'2', traits:'AP2' },
+                'heavy plasma gun':                  { range:'24"', shots:'1',  damage:'3', traits:'AP3' },
+                'hyper blaster':                     { range:'16"', shots:'3',  damage:'0', traits:'Auto' },
+                'fury rifle':                        { range:'24"', shots:'2',  damage:'1', traits:'' },
+                'grenade launcher':                  { range:'18"', shots:'1',  damage:'1', traits:'Blast,Fog' },
+                'flak gun':                          { range:'12"', shots:'2',  damage:'1', traits:'Blast' },
+                'flame projector':                   { range:'8"',  shots:'*',  damage:'1', traits:'Flame' },
+                'fusion rifle':                      { range:'12"', shots:'1',  damage:'4', traits:'AP4' },
+                'power weapon':                      { range:'CC',  shots:'1',  damage:'2', traits:'AP2' },
+                'glare sword':                       { range:'CC',  shots:'1',  damage:'1', traits:'Blind' },
+                'powered claw':                      { range:'CC',  shots:'1',  damage:'2', traits:'AP2' },
+                '1 breaching axe':                   { range:'CC',  shots:'1',  damage:'2', traits:'AP1' },
+                'shoulder: pulse laser':             { range:'30"', shots:'2',  damage:'1', traits:'AP1' },
+                'pulse laser':                       { range:'30"', shots:'2',  damage:'1', traits:'AP1' },
+                '20mm autocannon':                   { range:'24"', shots:'2',  damage:'2', traits:'AP1' },
+                'turret: 20mm autocannon':           { range:'24"', shots:'2',  damage:'2', traits:'Turret,AP1' },
+                'front: light machine gun':          { range:'24"', shots:'2',  damage:'0', traits:'Forward' },
+                'turret: 40mm cannon':               { range:'30"', shots:'1',  damage:'3', traits:'Turret,AP2' },
+                '40mm cannon':                       { range:'30"', shots:'1',  damage:'3', traits:'AP2' },
+                'turret: 100mm cannon':              { range:'36"', shots:'1',  damage:'5', traits:'Turret,AP4' },
+                '100mm cannon':                      { range:'36"', shots:'1',  damage:'5', traits:'AP4' },
+                'tank laser':                        { range:'48"', shots:'1',  damage:'4', traits:'Turret,AP3' },
+                'laser cannon':                      { range:'48"', shots:'1',  damage:'4', traits:'AP3,Crew' },
+                'laser cannon (35 points)':          { range:'48"', shots:'1',  damage:'4', traits:'AP3,Crew' },
+                '20mm autocannon (20 points)':       { range:'24"', shots:'2',  damage:'2', traits:'AP1,Crew' },
+                'infantry mortar (15 points)':       { range:'48"', shots:'1',  damage:'2', traits:'Blast,Crew' },
+                'main gun':                          { range:'36"', shots:'1',  damage:'4', traits:'AP3' },
+                'plasma rifle (forward)':            { range:'24"', shots:'1',  damage:'2', traits:'AP2,Fwd' },
+                'forward gun mount':                 { range:'24"', shots:'2',  damage:'0', traits:'Forward' },
+                'plasma rifle':                      { range:'24"', shots:'1',  damage:'2', traits:'AP2' },
+            };
+
+            const skipPatterns = ['+1 to', '+2 to', 'bonus', 'morale', 'suppression', 'observation',
+                                   'speed +', 'frag', 'fog grenade', 'penetrator', 'mechanized',
+                                   'breaching axe' /* handled separately */];
+
+            const allWeapons = [];
+            (u.baseWeapons || []).forEach(w => allWeapons.push(w));
+            (u.weapons || []).forEach(w => {
+                if (!(u.baseWeapons || []).includes(w)) allWeapons.push(w);
+            });
+
+            const rows = [];
+            allWeapons.forEach(wName => {
+                const lower = wName.toLowerCase();
+                if (skipPatterns.some(p => lower.includes(p))) return;
+                const stats = wp[lower] || { range:'—', shots:'—', damage:'—', traits:'—' };
+                rows.push({ name: wName, ...stats });
+            });
+            return rows;
         }
 
         function exportAsText() {
