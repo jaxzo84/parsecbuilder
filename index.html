@@ -1014,6 +1014,12 @@
         }
 
         function toggleSelection(type, index) {
+            // Preserve custom name before refresh
+            const nameInput = document.getElementById('unitCustomName');
+            if (nameInput && nameInput.value) {
+                currentUnit.customName = nameInput.value;
+            }
+            
             if (type === 'weapon') {
                 const idx = currentUnit.selectedWeapons.indexOf(index);
                 if (idx > -1) currentUnit.selectedWeapons.splice(idx, 1);
@@ -1278,6 +1284,7 @@
                     display: flex;
                     align-items: center;
                     border-right: 1px solid #000;
+                    color: #000;
                 }
                 .card-header-label {
                     background: #c73e1d;
@@ -1303,6 +1310,7 @@
                     display: flex;
                     align-items: center;
                     border-bottom: 2px solid #000;
+                    color: #000;
                 }
                 .card-header-pts {
                     border-left: 2px solid #000;
@@ -1327,6 +1335,7 @@
                     font-size: 13pt;
                     font-weight: bold;
                     padding: 1mm;
+                    color: #000;
                 }
 
                 /* ===== CARD BODY ===== */
@@ -1349,20 +1358,22 @@
                 .card-stat-label {
                     flex: 1;
                     padding: 1.5mm 2mm;
-                    font-size: 6.5pt;
+                    font-size: 6pt;
                     font-weight: bold;
                     border-right: 1px solid #000;
                     display: flex;
                     align-items: center;
+                    color: #000;
                 }
                 .card-stat-val {
                     width: 8mm;
                     padding: 1.5mm 1mm;
-                    font-size: 6.5pt;
+                    font-size: 6pt;
                     text-align: center;
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                    color: #000;
                 }
 
                 /* ===== RIGHT SIDE: weapons + veteran ===== */
@@ -1395,10 +1406,11 @@
                 .card-wep-row:last-child { border-bottom: none; }
                 .card-wep-row > div {
                     padding: 1.2mm 1.5mm;
-                    font-size: 6.5pt;
+                    font-size: 6pt;
                     border-right: 1px solid #ddd;
                     display: flex;
                     align-items: center;
+                    color: #000;
                 }
                 .card-wep-row > div:last-child { border-right: none; }
                 .card-wep-row > div.centered { justify-content: center; }
@@ -1425,6 +1437,7 @@
                     gap: 1.5mm;
                     align-items: flex-start;
                     align-content: flex-start;
+                    color: #000;
                 }
                 .card-vet-tag {
                     border: 1px solid #000;
@@ -1432,6 +1445,7 @@
                     padding: 0.5mm 2mm;
                     background: #f5f5f5;
                     font-size: 5.5pt;
+                    color: #000;
                 }
 
                 /* Extras (upgrades/addons) */
@@ -1463,16 +1477,17 @@
                 pageDiv.className = 'print-page';
 
                 pageUnits.forEach(u => {
-                    const isVehicle = u.type === 'vehicle';
+                    // Check if this is a vehicle (direct vehicle type OR support vehicle)
+                    const isVehicle = u.type === 'vehicle' || (u.type === 'support' && u.supportType === 'vehicle');
                     const displayName = u.customName || u.name;
                     const typeLabel = isVehicle ? 'Vehicle' : u.type === 'leader' ? 'Leader' : u.type === 'support' ? 'Support' : 'Infantry';
                     const wepColClass = isVehicle ? 'veh-wep-cols' : 'inf-wep-cols';
                     const traitsHdr = isVehicle ? 'Traits/Arc' : 'Traits';
 
-                    // Stats to show
+                    // Stats to show - use abbreviations for better fit
                     const stats = isVehicle
-                        ? [['Speed', u.speed||'—'],['Toughness', u.touchiness??'—'],['Kill Points', u.kp??'—'],['Capacity', u.capacity??'—']]
-                        : [['Speed','6"'],['Reaction','1'],['Combat Skill','+0'],['Toughness','3'],['Kill Points','1'],['Savvy','+0'],['Training','Mil.']];
+                        ? [['Speed', u.speed||'—'],['TOU', u.touchiness??'—'],['KP', u.kp??'—'],['Cap', u.capacity??'—']]
+                        : [['Speed','6"'],['React','1'],['Combat','+0'],['TOU','3'],['KP','1'],['Savvy','+0'],['Train','Mil.']];
 
                     // Weapon rows
                     const weaponRows = buildWeaponRows(u);
