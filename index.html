@@ -6,11 +6,11 @@
     <title>Five Parsecs from Home: Tactics - Army Builder</title>
     <style>
         @media print {
-            body > *:not(.print-area) { display: none !important; }
-            .print-area { display: block !important; }
-            .stat-card { page-break-inside: avoid; page-break-after: always; }
+            body > *:not(#printArea) { display: none !important; }
+            #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
+            .print-page { page-break-after: always; }
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .print-area { display: none; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #e4e4e4; padding: 20px; min-height: 100vh; }
         .container { max-width: 1600px; margin: 0 auto; }
         header { text-align: center; margin-bottom: 30px; padding: 30px; background: linear-gradient(135deg, #c73e1d 0%, #a02c15 100%); border-radius: 12px; box-shadow: 0 8px 32px rgba(199, 62, 29, 0.3); }
@@ -87,208 +87,6 @@
         @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .step-indicator { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         .step-indicator-title { font-size: 1.2em; color: #c73e1d; font-weight: bold; margin-bottom: 10px; }
-        .stat-card {
-            background: white;
-            color: #000;
-            width: 680px;
-            border: 2px solid #000;
-            border-radius: 10px;
-            font-family: Arial, Helvetica, sans-serif;
-            page-break-inside: avoid;
-            page-break-after: always;
-            margin: 15px auto;
-            overflow: hidden;
-        }
-        .sc-header {
-            display: flex;
-            align-items: center;
-            background: white;
-            border-bottom: 2px solid #000;
-            padding: 6px 10px;
-            gap: 10px;
-        }
-        .sc-header-arrow {
-            font-size: 1.2em;
-            color: #000;
-        }
-        .sc-header-label {
-            font-size: 0.85em;
-            font-weight: bold;
-            color: #000;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            white-space: nowrap;
-        }
-        .sc-header-name {
-            flex: 1;
-            border-bottom: 2px solid #000;
-            min-width: 150px;
-            height: 22px;
-            font-size: 1em;
-            font-weight: bold;
-            padding: 0 4px;
-            display: flex;
-            align-items: flex-end;
-        }
-        .sc-body {
-            display: flex;
-            min-height: 200px;
-        }
-        .sc-left {
-            width: 130px;
-            flex-shrink: 0;
-            border-right: 2px solid #000;
-        }
-        .sc-points-box {
-            background: #000;
-            color: white;
-            text-align: center;
-            padding: 5px;
-            font-size: 0.7em;
-            font-weight: bold;
-            text-transform: uppercase;
-            line-height: 1.2;
-            border-bottom: 2px solid #000;
-        }
-        .sc-points-value {
-            background: white;
-            color: #000;
-            font-size: 1.3em;
-            font-weight: bold;
-            text-align: center;
-            padding: 4px;
-            border-bottom: 2px solid #000;
-        }
-        .sc-stat-row {
-            display: flex;
-            border-bottom: 1px solid #000;
-        }
-        .sc-stat-row:last-child {
-            border-bottom: none;
-        }
-        .sc-stat-label {
-            flex: 1;
-            padding: 5px 6px;
-            font-size: 0.78em;
-            font-weight: bold;
-            border-right: 1px solid #000;
-        }
-        .sc-stat-val {
-            width: 36px;
-            padding: 5px 4px;
-            font-size: 0.78em;
-            text-align: center;
-        }
-        .sc-right {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        .sc-weapons-header {
-            display: grid;
-            background: #000;
-            color: white;
-            font-size: 0.7em;
-            font-weight: bold;
-            text-transform: uppercase;
-            text-align: center;
-            border-bottom: 2px solid #000;
-        }
-        .sc-infantry-weapons-header {
-            grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
-        }
-        .sc-vehicle-weapons-header {
-            grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
-        }
-        .sc-weapons-header div {
-            padding: 5px 3px;
-            border-right: 1px solid #555;
-        }
-        .sc-weapons-header div:last-child {
-            border-right: none;
-        }
-        .sc-weapons-row {
-            display: grid;
-            border-bottom: 1px solid #000;
-            min-height: 24px;
-        }
-        .sc-infantry-weapons-row {
-            grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
-        }
-        .sc-vehicle-weapons-row {
-            grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
-        }
-        .sc-weapons-row div {
-            padding: 4px 4px;
-            font-size: 0.75em;
-            border-right: 1px solid #000;
-            display: flex;
-            align-items: center;
-        }
-        .sc-weapons-row div:last-child {
-            border-right: none;
-        }
-        .sc-weapons-empty {
-            flex: 1;
-        }
-        .sc-bottom {
-            border-top: 2px solid #000;
-            display: flex;
-            flex-direction: column;
-        }
-        .sc-vet-label {
-            background: #000;
-            color: white;
-            font-size: 0.7em;
-            font-weight: bold;
-            text-transform: uppercase;
-            padding: 4px 8px;
-            letter-spacing: 1px;
-        }
-        .sc-vet-content {
-            padding: 6px 8px;
-            font-size: 0.78em;
-            min-height: 40px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-        }
-        .sc-vet-skill {
-            background: #f0f0f0;
-            border: 1px solid #000;
-            border-radius: 3px;
-            padding: 2px 6px;
-            font-size: 0.85em;
-        }
-        .sc-upgrades-section {
-            border-top: 1px solid #000;
-            padding: 6px 8px;
-            font-size: 0.78em;
-        }
-        .sc-upgrades-label {
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.75em;
-            margin-bottom: 3px;
-            letter-spacing: 0.5px;
-        }
-        @media print {
-            body > *:not(.print-area) { display: none !important; }
-            .print-area { display: block !important; }
-            .stat-card { 
-                page-break-inside: avoid; 
-                page-break-after: always;
-                margin: 10px auto;
-                width: 680px;
-            }
-            .sc-print-page {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 20px;
-                padding: 10px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -1427,182 +1225,324 @@
             const p = document.getElementById('printArea');
             p.innerHTML = '';
 
-            // Inline print styles for maximum reliability
             const style = document.createElement('style');
             style.textContent = `
+                * { box-sizing: border-box; margin: 0; padding: 0; }
+                body { background: white; }
                 @media print {
                     body > *:not(#printArea) { display: none !important; }
                     #printArea { display: block !important; position: absolute; left:0; top:0; width:100%; }
+                    .print-page { page-break-after: always; }
                 }
-                .pc-page { font-family: Arial, Helvetica, sans-serif; background: white; padding: 8mm; }
-                .pc-army-title { text-align:center; font-size:18pt; font-weight:bold; margin-bottom:6mm; padding-bottom:3mm; border-bottom:2px solid #000; color:#000; }
-                /* ---- CARD SHELL ---- */
-                .pc-card { background:white; border:2px solid #000; border-radius:8px; width:170mm; margin:0 auto 8mm auto; overflow:hidden; page-break-inside:avoid; }
-                /* ---- HEADER BAR ---- */
-                .pc-header { display:flex; align-items:center; border-bottom:2px solid #000; padding:3mm 4mm; gap:3mm; background:white; }
-                .pc-header-arrow { font-size:14pt; color:#000; }
-                .pc-header-type { font-size:8pt; font-weight:bold; text-transform:uppercase; letter-spacing:1px; white-space:nowrap; color:#000; }
-                .pc-header-name { flex:1; border-bottom:2px solid #000; font-size:12pt; font-weight:bold; padding:0 2mm 1mm 2mm; color:#000; }
-                /* ---- BODY: left stats + right weapons ---- */
-                .pc-body { display:flex; }
-                /* LEFT column */
-                .pc-left { width:36mm; flex-shrink:0; border-right:2px solid #000; }
-                .pc-pts-label { background:#000; color:white; font-size:6.5pt; font-weight:bold; text-transform:uppercase; text-align:center; padding:2mm 1mm; line-height:1.2; }
-                .pc-pts-value { font-size:14pt; font-weight:bold; text-align:center; padding:2mm 1mm; border-bottom:2px solid #000; color:#000; }
-                .pc-stat-row { display:flex; border-bottom:1px solid #000; }
-                .pc-stat-row:last-child { border-bottom:none; }
-                .pc-stat-label { flex:1; font-size:7pt; font-weight:bold; padding:2.5mm 3mm; border-right:1px solid #000; color:#000; }
-                .pc-stat-val { width:11mm; font-size:7pt; text-align:center; padding:2.5mm 1mm; color:#000; }
-                /* RIGHT column */
-                .pc-right { flex:1; display:flex; flex-direction:column; }
-                .pc-wep-header { display:grid; background:#000; color:white; font-size:6.5pt; font-weight:bold; text-transform:uppercase; text-align:center; }
-                .pc-wep-header-inf  { grid-template-columns: 2.5fr 1fr 0.8fr 0.8fr 1.5fr; }
-                .pc-wep-header-veh  { grid-template-columns: 2.5fr 1fr 0.8fr 0.8fr 1.5fr; }
-                .pc-wep-header > div { padding:2.5mm 1mm; border-right:1px solid #555; }
-                .pc-wep-header > div:last-child { border-right:none; }
-                .pc-wep-row { display:grid; border-bottom:1px solid #000; min-height:7mm; }
-                .pc-wep-row-inf { grid-template-columns: 2.5fr 1fr 0.8fr 0.8fr 1.5fr; }
-                .pc-wep-row-veh { grid-template-columns: 2.5fr 1fr 0.8fr 0.8fr 1.5fr; }
-                .pc-wep-row > div { font-size:7pt; padding:2mm 2mm; border-right:1px solid #000; display:flex; align-items:center; color:#000; }
-                .pc-wep-row > div:last-child { border-right:none; }
-                .pc-wep-spacer { flex:1; }
-                /* BOTTOM: veteran skills */
-                .pc-bot { border-top:2px solid #000; }
-                .pc-vet-label { background:#000; color:white; font-size:7pt; font-weight:bold; text-transform:uppercase; letter-spacing:1px; padding:2mm 4mm; }
-                .pc-vet-content { padding:2.5mm 4mm; font-size:7pt; color:#000; min-height:10mm; display:flex; flex-wrap:wrap; gap:2mm; align-items:center; }
-                .pc-vet-skill { border:1px solid #000; border-radius:2px; padding:1mm 2mm; font-size:6.5pt; }
-                /* Extras */
-                .pc-extras { border-top:1px solid #000; padding:2mm 4mm; font-size:6.5pt; color:#000; }
-                .pc-extras-label { font-weight:bold; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:1mm; font-size:6pt; }
+
+                /* ===== PAGE GRID: 2 columns x 3 rows = 6 cards per A4 page ===== */
+                #printArea { font-family: Arial, Helvetica, sans-serif; background: white; }
+                .army-title-page {
+                    display: flex; align-items: center; justify-content: center;
+                    height: 30mm; font-size: 18pt; font-weight: bold;
+                    border-bottom: 3px solid #c73e1d; margin-bottom: 4mm;
+                    color: #c73e1d; letter-spacing: 2px;
+                }
+                .print-page {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    grid-template-rows: repeat(3, 1fr);
+                    gap: 4mm;
+                    padding: 8mm;
+                    width: 210mm;
+                    height: 297mm;
+                    background: white;
+                }
+
+                /* ===== SHARED CARD BASE ===== */
+                .card {
+                    border: 2px solid #000;
+                    border-radius: 6px;
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    background: white;
+                    font-size: 7pt;
+                }
+
+                /* ===== CARD HEADER ===== */
+                .card-header {
+                    display: flex;
+                    align-items: stretch;
+                    border-bottom: 2px solid #000;
+                    min-height: 9mm;
+                }
+                .card-header-arrow {
+                    padding: 2mm 2mm;
+                    font-size: 10pt;
+                    display: flex;
+                    align-items: center;
+                    border-right: 1px solid #000;
+                }
+                .card-header-label {
+                    background: #c73e1d;
+                    color: white;
+                    font-size: 6pt;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    writing-mode: vertical-rl;
+                    transform: rotate(180deg);
+                    padding: 2mm 1.5mm;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-right: 2px solid #000;
+                    white-space: nowrap;
+                }
+                .card-header-name {
+                    flex: 1;
+                    font-size: 10pt;
+                    font-weight: bold;
+                    padding: 2mm 3mm;
+                    display: flex;
+                    align-items: center;
+                    border-bottom: 2px solid #000;
+                }
+                .card-header-pts {
+                    border-left: 2px solid #000;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    min-width: 14mm;
+                }
+                .card-header-pts-label {
+                    background: #000;
+                    color: white;
+                    font-size: 5pt;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    text-align: center;
+                    padding: 1mm;
+                    width: 100%;
+                    line-height: 1.2;
+                }
+                .card-header-pts-val {
+                    font-size: 13pt;
+                    font-weight: bold;
+                    padding: 1mm;
+                }
+
+                /* ===== CARD BODY ===== */
+                .card-body { display: flex; flex: 1; }
+
+                /* ===== LEFT STAT COLUMN ===== */
+                .card-stats {
+                    display: flex;
+                    flex-direction: column;
+                    border-right: 2px solid #000;
+                    min-width: 22mm;
+                    max-width: 22mm;
+                }
+                .card-stat-row {
+                    display: flex;
+                    border-bottom: 1px solid #000;
+                    flex: 1;
+                }
+                .card-stat-row:last-child { border-bottom: none; }
+                .card-stat-label {
+                    flex: 1;
+                    padding: 1.5mm 2mm;
+                    font-size: 6.5pt;
+                    font-weight: bold;
+                    border-right: 1px solid #000;
+                    display: flex;
+                    align-items: center;
+                }
+                .card-stat-val {
+                    width: 8mm;
+                    padding: 1.5mm 1mm;
+                    font-size: 6.5pt;
+                    text-align: center;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                /* ===== RIGHT SIDE: weapons + veteran ===== */
+                .card-right { flex: 1; display: flex; flex-direction: column; }
+
+                /* Weapons table */
+                .card-wep-table { flex: 1; display: flex; flex-direction: column; }
+                .card-wep-header {
+                    display: grid;
+                    background: #c73e1d;
+                    color: white;
+                    font-size: 6pt;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    text-align: center;
+                    border-bottom: 1px solid #000;
+                }
+                .inf-wep-cols { grid-template-columns: 2.2fr 0.8fr 0.6fr 0.7fr 1.4fr; }
+                .veh-wep-cols { grid-template-columns: 2.2fr 0.8fr 0.6fr 0.7fr 1.4fr; }
+                .card-wep-header > div {
+                    padding: 1.5mm 1mm;
+                    border-right: 1px solid rgba(255,255,255,0.4);
+                }
+                .card-wep-header > div:last-child { border-right: none; }
+                .card-wep-row {
+                    display: grid;
+                    border-bottom: 1px solid #ccc;
+                    flex: 1;
+                }
+                .card-wep-row:last-child { border-bottom: none; }
+                .card-wep-row > div {
+                    padding: 1.2mm 1.5mm;
+                    font-size: 6.5pt;
+                    border-right: 1px solid #ddd;
+                    display: flex;
+                    align-items: center;
+                }
+                .card-wep-row > div:last-child { border-right: none; }
+                .card-wep-row > div.centered { justify-content: center; }
+
+                /* Veteran Skills */
+                .card-vet {
+                    border-top: 2px solid #000;
+                }
+                .card-vet-header {
+                    background: #000;
+                    color: white;
+                    font-size: 6pt;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    padding: 1.5mm 2mm;
+                }
+                .card-vet-body {
+                    padding: 1.5mm 2mm;
+                    font-size: 6pt;
+                    min-height: 8mm;
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 1.5mm;
+                    align-items: flex-start;
+                    align-content: flex-start;
+                }
+                .card-vet-tag {
+                    border: 1px solid #000;
+                    border-radius: 2px;
+                    padding: 0.5mm 2mm;
+                    background: #f5f5f5;
+                    font-size: 5.5pt;
+                }
+
+                /* Extras (upgrades/addons) */
+                .card-extras {
+                    border-top: 1px solid #aaa;
+                    padding: 1mm 2mm;
+                    font-size: 5.5pt;
+                    color: #333;
+                    line-height: 1.4;
+                }
+                .card-extras-lbl {
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    font-size: 5pt;
+                    color: #c73e1d;
+                    margin-bottom: 0.5mm;
+                }
             `;
             p.appendChild(style);
 
-            const page = document.createElement('div');
-            page.className = 'pc-page';
-
-            if (armyName) {
-                const title = document.createElement('div');
-                title.className = 'pc-army-title';
-                title.textContent = armyName + ' — Army Roster';
-                page.appendChild(title);
+            // Group units into pages of 6
+            const pages = [];
+            for (let i = 0; i < army.length; i += 6) {
+                pages.push(army.slice(i, i + 6));
             }
 
-            army.forEach(u => {
-                const isVehicle = u.type === 'vehicle';
-                const isLeader  = u.type === 'leader';
-                const isSupport = u.type === 'support';
-                const card = document.createElement('div');
-                card.className = 'pc-card';
+            pages.forEach((pageUnits, pi) => {
+                const pageDiv = document.createElement('div');
+                pageDiv.className = 'print-page';
 
-                const displayName = u.customName || u.name;
-                const typeLabel   = isVehicle ? 'Vehicle:' : isLeader ? 'Leader:' : isSupport ? 'Support:' : 'Infantry:';
-                const rowClass    = isVehicle ? 'pc-wep-row-veh' : 'pc-wep-row-inf';
-                const hdrClass    = isVehicle ? 'pc-wep-header-veh' : 'pc-wep-header-inf';
-                const traitsHdr   = isVehicle ? 'Traits/Arc' : 'Traits';
+                pageUnits.forEach(u => {
+                    const isVehicle = u.type === 'vehicle';
+                    const displayName = u.customName || u.name;
+                    const typeLabel = isVehicle ? 'Vehicle' : u.type === 'leader' ? 'Leader' : u.type === 'support' ? 'Support' : 'Infantry';
+                    const wepColClass = isVehicle ? 'veh-wep-cols' : 'inf-wep-cols';
+                    const traitsHdr = isVehicle ? 'Traits/Arc' : 'Traits';
 
-                // ---- HEADER ----
-                card.innerHTML = `
-                    <div class="pc-header">
-                        <span class="pc-header-arrow">&#x21e6;</span>
-                        <span class="pc-header-type">${typeLabel}</span>
-                        <div class="pc-header-name">${displayName}</div>
-                        <span class="pc-header-arrow">&#x21e8;</span>
-                    </div>
-                `;
+                    // Stats to show
+                    const stats = isVehicle
+                        ? [['Speed', u.speed||'—'],['Toughness', u.touchiness??'—'],['Kill Points', u.kp??'—'],['Crew', u.crew??'—'],['Capacity', u.capacity??'—']]
+                        : [['Speed','6"'],['Reaction','1'],['Combat Skill','+0'],['Toughness','3'],['Kill Points','1'],['Savvy','+0'],['Training','Mil.']];
 
-                // ---- BODY ----
-                const body = document.createElement('div');
-                body.className = 'pc-body';
+                    // Weapon rows
+                    const weaponRows = buildWeaponRows(u);
+                    const numRows = Math.max(isVehicle ? 3 : 4, weaponRows.length);
 
-                // LEFT — stats
-                const left = document.createElement('div');
-                left.className = 'pc-left';
-                left.innerHTML = `<div class="pc-pts-label">Points<br>Cost</div><div class="pc-pts-value">${u.cost}</div>`;
+                    // Veteran skills
+                    const vetSkills = u.veteranSkillsList || [];
 
-                if (isVehicle) {
-                    [
-                        ['Speed',      u.speed || '—'],
-                        ['Toughness',  u.touchiness ?? '—'],
-                        ['Kill Points',u.kp ?? '—'],
-                        ['Capacity',   u.capacity ?? '—']
-                    ].forEach(([lbl, val]) => {
-                        left.innerHTML += `<div class="pc-stat-row"><div class="pc-stat-label">${lbl}</div><div class="pc-stat-val">${val}</div></div>`;
-                    });
-                } else {
-                    [
-                        ['Speed',        '6"'],
-                        ['Reaction',     '1'],
-                        ['Combat Skill', '+0'],
-                        ['Toughness',    '3'],
-                        ['Kill Points',  '1'],
-                        ['Savvy',        '+0'],
-                        ['Training',     'Mil.']
-                    ].forEach(([lbl, val]) => {
-                        left.innerHTML += `<div class="pc-stat-row"><div class="pc-stat-label">${lbl}</div><div class="pc-stat-val">${val}</div></div>`;
-                    });
-                }
-                body.appendChild(left);
+                    // Extras
+                    const allExtras = [
+                        ...(u.upgrades||[]).map(x=>`↑ ${x}`),
+                        ...(u.addons||[]).map(x=>`+ ${x}`)
+                    ];
 
-                // RIGHT — weapons table
-                const right = document.createElement('div');
-                right.className = 'pc-right';
-                right.innerHTML = `
-                    <div class="pc-wep-header ${hdrClass}">
-                        <div>Weapons</div><div>Range</div><div>Shots</div><div>Damage</div><div>${traitsHdr}</div>
-                    </div>
-                `;
-
-                const weaponRows = buildWeaponRows(u);
-                const numRows = Math.max(4, weaponRows.length);
-                for (let i = 0; i < numRows; i++) {
-                    const w = weaponRows[i] || { name:'', range:'', shots:'', damage:'', traits:'' };
-                    right.innerHTML += `
-                        <div class="pc-wep-row ${rowClass}">
-                            <div>${w.name}</div>
-                            <div style="text-align:center">${w.range}</div>
-                            <div style="text-align:center">${w.shots}</div>
-                            <div style="text-align:center">${w.damage}</div>
-                            <div>${w.traits}</div>
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <div class="card-header-arrow">⇐</div>
+                            <div class="card-header-label">${typeLabel}</div>
+                            <div style="flex:1; display:flex; flex-direction:column;">
+                                <div class="card-header-name">${displayName}</div>
+                            </div>
+                            <div class="card-header-pts">
+                                <div class="card-header-pts-label">Points<br>Cost</div>
+                                <div class="card-header-pts-val">${u.cost}</div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-stats">
+                                ${stats.map(([l,v])=>`<div class="card-stat-row"><div class="card-stat-label">${l}</div><div class="card-stat-val">${v}</div></div>`).join('')}
+                            </div>
+                            <div class="card-right">
+                                <div class="card-wep-table">
+                                    <div class="card-wep-header ${wepColClass}">
+                                        <div>Weapons</div><div>Range</div><div>Shots</div><div>Dmg</div><div>${traitsHdr}</div>
+                                    </div>
+                                    ${Array.from({length: numRows}, (_,i) => {
+                                        const w = weaponRows[i] || {name:'',range:'',shots:'',damage:'',traits:''};
+                                        return `<div class="card-wep-row ${wepColClass}">
+                                            <div>${w.name}</div>
+                                            <div class="centered">${w.range}</div>
+                                            <div class="centered">${w.shots}</div>
+                                            <div class="centered">${w.damage}</div>
+                                            <div>${w.traits}</div>
+                                        </div>`;
+                                    }).join('')}
+                                </div>
+                                <div class="card-vet">
+                                    <div class="card-vet-header">Veteran Skills</div>
+                                    <div class="card-vet-body">
+                                        ${vetSkills.length > 0
+                                            ? vetSkills.map(s=>`<span class="card-vet-tag"><b>${s.name}:</b> ${s.desc}</span>`).join('')
+                                            : '<span style="color:#999;font-style:italic;">None</span>'}
+                                    </div>
+                                </div>
+                                ${allExtras.length > 0 ? `
+                                    <div class="card-extras">
+                                        <div class="card-extras-lbl">Upgrades &amp; Add-ons</div>
+                                        ${allExtras.join(' &nbsp; ')}
+                                    </div>` : ''}
+                            </div>
                         </div>
                     `;
-                }
-                right.innerHTML += `<div class="pc-wep-spacer"></div>`;
-                body.appendChild(right);
-                card.appendChild(body);
+                    pageDiv.appendChild(card);
+                });
 
-                // ---- VETERAN SKILLS ----
-                const vetSkills = u.veteranSkillsList || [];
-                const bot = document.createElement('div');
-                bot.className = 'pc-bot';
-                bot.innerHTML = `<div class="pc-vet-label">Veteran Skills</div>`;
-                const vetContent = document.createElement('div');
-                vetContent.className = 'pc-vet-content';
-                if (vetSkills.length > 0) {
-                    vetSkills.forEach(s => {
-                        vetContent.innerHTML += `<span class="pc-vet-skill"><strong>${s.name}:</strong> ${s.desc}</span>`;
-                    });
-                } else {
-                    vetContent.innerHTML = `<span style="color:#999;font-style:italic">None</span>`;
-                }
-                bot.appendChild(vetContent);
-                card.appendChild(bot);
-
-                // ---- EXTRAS (upgrades + addons) ----
-                const allExtras = [
-                    ...(u.upgrades || []).map(x => `Upgrade: ${x}`),
-                    ...(u.addons   || []).map(x => `Add-on: ${x}`)
-                ];
-                if (allExtras.length > 0) {
-                    const ext = document.createElement('div');
-                    ext.className = 'pc-extras';
-                    ext.innerHTML = `<div class="pc-extras-label">Upgrades &amp; Add-ons</div>${allExtras.join(' &nbsp;|&nbsp; ')}`;
-                    card.appendChild(ext);
-                }
-
-                page.appendChild(card);
+                p.appendChild(pageDiv);
             });
 
-            p.appendChild(page);
             window.print();
         }
 
